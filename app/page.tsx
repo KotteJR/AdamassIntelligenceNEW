@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import AddSourcesModal from "./components/AddSourcesModal";
@@ -17,9 +17,24 @@ interface StoredReportIndexItem {
   dateGenerated: string;
 }
 
-export default function Home() {
-  const router = useRouter();
+// Component that uses useSearchParams - needs to be wrapped in Suspense
+function SearchParamsHandler({ setIsAuthModalOpen }: { setIsAuthModalOpen: (open: boolean) => void }) {
   const searchParams = useSearchParams();
+  const { user } = useUser();
+
+  useEffect(() => {
+    // if redirected with ?auth=1 and not logged in, open sign-in modal
+    const wantsAuth = searchParams?.get("auth") === "1";
+    if (wantsAuth && !user) {
+      setIsAuthModalOpen(true);
+    }
+  }, [searchParams, user, setIsAuthModalOpen]);
+
+  return null;
+}
+
+function HomeContent() {
+  const router = useRouter();
   const { user, isLoading: userLoading, signOut } = useUser();
   const { isDark } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -31,11 +46,6 @@ export default function Home() {
   const [myIds, setMyIds] = useState<string[]>([]);
 
   useEffect(() => {
-    // if redirected with ?auth=1 and not logged in, open sign-in modal
-    const wantsAuth = searchParams?.get("auth") === "1";
-    if (wantsAuth && !user) {
-      setIsAuthModalOpen(true);
-    }
 
     const loadAllReports = async () => {
       try {
@@ -112,6 +122,9 @@ export default function Home() {
 
   return (
     <main className={`min-h-screen ${isDark ? 'theme-bg' : 'theme-bg'}`}>
+      <Suspense fallback={null}>
+        <SearchParamsHandler setIsAuthModalOpen={setIsAuthModalOpen} />
+      </Suspense>
       {/* Top bar */}
       <div className={`sticky top-0 z-20 border-b ${isDark ? 'theme-border' : 'theme-border'} ${isDark ? 'theme-bg' : 'theme-bg'} backdrop-blur`}>
         <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4">
@@ -311,5 +324,17 @@ export default function Home() {
         }}
       />
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-slate-600">Loading...</div>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }
