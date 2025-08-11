@@ -171,8 +171,9 @@ const generateMindMapLayout = (data: MindMapData): { nodes: Node[]; edges: Edge[
       data: { 
         label: node.label,
         type: node.type,
-        score: node.data?.score,
-        summary: node.data?.summary
+        // guard optional nested data as any to satisfy type checker for dynamic JSON
+        score: (node as any).data?.score,
+        summary: (node as any).data?.summary
       },
     });
 
