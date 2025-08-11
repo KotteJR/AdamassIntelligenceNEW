@@ -50,7 +50,11 @@ interface MindMapVisualizationProps {
 }
 
 // Custom node components
-const CentralNode = ({ data }: { data: { label: string } }) => {
+type CentralNodeData = { label: string };
+type BranchNodeData = { label: string; type: string; color?: string; score?: string | number; summary?: string };
+type DetailNodeData = { label: string; type: string; color?: string; details?: string; priority?: string };
+
+const CentralNode = ({ data }: { data: CentralNodeData }) => {
   const { isDark } = useTheme();
   return (
     <div className={`px-6 py-4 shadow-lg rounded-2xl border-2 min-w-[200px] ${isDark ? 'bg-slate-800 border-slate-600' : 'bg-white border-slate-900'}`}>
@@ -59,7 +63,7 @@ const CentralNode = ({ data }: { data: { label: string } }) => {
   );
 };
 
-const BranchNode = ({ data }: { data: { label: string; type: string; color?: string } }) => {
+const BranchNode = ({ data }: { data: BranchNodeData }) => {
   const { isDark } = useTheme();
   const bgColor = isDark 
     ? (data.type === 'strength' ? 'bg-green-900/50 border-green-400' :
@@ -86,7 +90,7 @@ const BranchNode = ({ data }: { data: { label: string; type: string; color?: str
   );
 };
 
-const DetailNode = ({ data }: { data: { label: string; type: string; color?: string } }) => {
+const DetailNode = ({ data }: { data: DetailNodeData }) => {
   const { isDark } = useTheme();
   const bgColor = isDark
     ? (data.type === 'strength' ? 'bg-green-800/50 border-green-500' :
