@@ -870,23 +870,12 @@ function ReportConsoleContent() {
               {/* Mobile: Horizontal scrollable cards */}
               <div className="flex gap-3 overflow-x-auto pb-2">
                 <div className="flex shrink-0 gap-3">
-                  <div className="w-36 h-40 shrink-0">
-                    <StudioCard
-                      title="Audio Overview"
-                      subtitle="Narrated summary"
-                      imageSrc="/features/audiooverview.png"
-                      onClick={() => handleStudioAction("Audio Overview")}
-                      disabled={isProcessing("Audio Overview")}
-                      isGenerated={!!generatedContent.audioOverview}
-                      buttonText="Generate"
-                      isLoading={isProcessing("Audio Overview")}
-                    />
-                  </div>
+                  {/* Audio Overview removed on mobile */}
                   <div className="w-36 h-40 shrink-0">
                     <StudioCard
                       title="Mind Map"
                       subtitle="Visual relationships"
-                      imageSrc="/features/mindmap.png"
+                      imageSrc="/features/mindmap.svg"
                       onClick={() => handleStudioAction("Mind Map")}
                       disabled={isProcessing("Mind Map")}
                       isGenerated={!!generatedContent.mindmap}
@@ -898,7 +887,7 @@ function ReportConsoleContent() {
                     <StudioCard
                       title="Podcast"
                       subtitle="AI discussion"
-                      imageSrc="/features/podcast.png"
+                      imageSrc="/features/podcast.svg"
                       onClick={() => handleStudioAction("Generate Podcast")}
                       disabled={isProcessing("Generate Podcast")}
                       isGenerated={!!generatedContent.podcast}
@@ -910,7 +899,7 @@ function ReportConsoleContent() {
                     <StudioCard
                       title="Audio Report"
                       subtitle="Full narration"
-                      imageSrc="/features/audioreport.png"
+                      imageSrc="/features/audioreport.svg"
                       onClick={() => handleStudioAction("Audio Report")}
                       disabled={isProcessing("Audio Report")}
                       isGenerated={!!generatedContent.audioReport}
@@ -922,7 +911,7 @@ function ReportConsoleContent() {
                     <StudioCard
                       title="Export PDF"
                       subtitle="Download report"
-                      imageSrc="/features/pdf.png"
+                      imageSrc="/features/pdf.svg"
                       onClick={() => handleStudioAction("Export PDF")}
                       disabled={true}
                       isGenerated={false}
@@ -971,7 +960,7 @@ function ReportConsoleContent() {
                 <StudioCard
                   title="Mind Map"
                   subtitle="Visualize relationships between entities and themes."
-                  imageSrc="/features/mindmap.png"
+                  imageSrc="/features/mindmap.svg"
                   onClick={() => handleStudioAction("Mind Map")}
                   disabled={isProcessing("Mind Map")}
                   isGenerated={!!generatedContent.mindmap}
@@ -981,7 +970,7 @@ function ReportConsoleContent() {
                 <StudioCard
                   title="Generate Podcast"
                   subtitle="Two-voice discussion based on the analysis."
-                  imageSrc="/features/podcast.png"
+                  imageSrc="/features/podcast.svg"
                   onClick={() => handleStudioAction("Generate Podcast")}
                   disabled={isProcessing("Generate Podcast")}
                   isGenerated={!!generatedContent.podcast}
@@ -991,7 +980,7 @@ function ReportConsoleContent() {
                 <StudioCard
                   title="Generate Audio Report"
                   subtitle="Narrated full report for listening on the go."
-                  imageSrc="/features/audioreport.png"
+                  imageSrc="/features/audioreport.svg"
                   onClick={() => handleStudioAction("Audio Report")}
                   disabled={isProcessing("Audio Report")}
                   isGenerated={!!generatedContent.audioReport}
@@ -1001,7 +990,7 @@ function ReportConsoleContent() {
                 <StudioCard
                   title="Export PDF"
                   subtitle="Export a beautifully formatted PDF."
-                  imageSrc="/features/pdf.png"
+                  imageSrc="/features/pdf.svg"
                   onClick={() => handleStudioAction("Export PDF")}
                   disabled={true}
                   isGenerated={false}
