@@ -6,7 +6,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 // Initialize OpenAI using env only
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY as string;
 if (!OPENAI_API_KEY) {
   console.warn('[Mind Map API] OPENAI_API_KEY is not set');
 }

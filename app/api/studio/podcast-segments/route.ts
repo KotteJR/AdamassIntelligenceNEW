@@ -5,8 +5,8 @@ import OpenAI from 'openai';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY as string;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY as string;
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 

@@ -5,7 +5,7 @@ import OpenAI from "openai";
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY as string;
 if (!OPENAI_API_KEY) {
   console.warn('[Process Report] OPENAI_API_KEY is not set');
 }
