@@ -220,9 +220,9 @@ const generateMindMapLayout = (data: MindMapData): { nodes: Node[]; edges: Edge[
         data: { 
           label: childNode.label,
           type: childNode.type,
-          details: childNode.data?.details,
-          priority: childNode.data?.priority,
-          action: childNode.data?.action
+          details: (childNode as any).data?.details,
+          priority: (childNode as any).data?.priority,
+          action: (childNode as any).data?.action
         },
       });
 
