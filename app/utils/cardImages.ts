@@ -34,10 +34,10 @@ function detectCategory(nameRaw: string): { query: string; alt: string } {
 export function getProjectImage(companyName: string, jobId: string): ProjectImage {
   const { query, alt } = detectCategory(companyName || 'Company');
   const seed = simpleHash((companyName || '') + (jobId || '')) % 1000;
-  // Unsplash Source returns a random but stable image for a given signature
-  // request smaller images to improve load speed
-  const imageUrl = `https://source.unsplash.com/800x450/?${encodeURIComponent(query)}&sig=${seed}`;
-  const fallbackUrl = `https://picsum.photos/seed/${seed}/800/450`;
+  // Use fast local pattern images for guaranteed loading
+  const local = `/features/pattern-${(seed % 4) + 1}.svg`;
+  const imageUrl = local;
+  const fallbackUrl = local;
   return { imageUrl, fallbackUrl, alt: `${alt} image for ${companyName}` };
 }
 

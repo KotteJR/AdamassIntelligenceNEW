@@ -94,17 +94,17 @@ const AutoPlayPodcast: React.FC<{ segments: any[] }> = ({ segments }) => {
   return (
     <div className="space-y-6">
       {/* Player Controls */}
-      <div className={`rounded-xl p-6 ${isDark ? 'bg-slate-800' : 'bg-slate-50'}`}>
+      <div className={`rounded-xl p-6 ${isDark ? 'theme-card' : 'bg-slate-50'}`}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-[color:var(--accent)] to-purple-600 rounded-lg flex items-center justify-center">
               <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.786L4.617 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.617l3.766-3.786a1 1 0 011.617.786zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.983 5.983 0 01-1.757 4.243 1 1 0 01-1.415-1.414A3.984 3.984 0 0013 10a3.984 3.984 0 00-1.172-2.829 1 1 0 010-1.414z" clipRule="evenodd"></path>
               </svg>
             </div>
             <div>
-              <h3 className={`font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>Business Analysis Podcast</h3>
-              <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+              <h3 className={`font-medium ${isDark ? 'theme-text' : 'text-slate-900'}`}>Business Analysis Podcast</h3>
+              <p className={`text-sm ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>
                 Segment {currentSegment + 1} of {validSegments.length} • Auto-play enabled
               </p>
             </div>
@@ -112,7 +112,7 @@ const AutoPlayPodcast: React.FC<{ segments: any[] }> = ({ segments }) => {
           <div className="flex items-center space-x-2">
             <button
               onClick={togglePlayPause}
-              className="w-10 h-10 bg-slate-900 hover:bg-black rounded-full flex items-center justify-center text-white transition-colors"
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isDark ? 'btn-primary' : 'bg-slate-900 hover:bg-black text-white'}`}
             >
               {isPlaying ? (
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -133,7 +133,7 @@ const AutoPlayPodcast: React.FC<{ segments: any[] }> = ({ segments }) => {
             <div
               key={index}
               className={`h-1 flex-1 rounded-full transition-colors ${
-                index <= currentSegment ? 'bg-blue-500' : `${isDark ? 'bg-slate-600' : 'bg-slate-200'}`
+                index <= currentSegment ? 'bg-[color:var(--accent)]' : `${isDark ? 'theme-muted' : 'bg-slate-200'}`
               }`}
             />
           ))}
@@ -147,22 +147,22 @@ const AutoPlayPodcast: React.FC<{ segments: any[] }> = ({ segments }) => {
             key={index}
             className={`border rounded-lg p-4 transition-all ${
               index === currentSegment && isPlaying
-                ? `${isDark ? 'border-blue-400 bg-slate-800' : 'border-blue-300 bg-blue-50'}`
-                : `${isDark ? 'border-slate-700 hover:border-slate-600' : 'border-slate-200 hover:border-slate-300'}`
+                ? `${isDark ? 'border-[color:var(--accent)] theme-muted' : 'border-blue-300 bg-blue-50'}`
+                : `${isDark ? 'theme-border hover:border-[color:var(--border-secondary)]' : 'border-slate-200 hover:border-slate-300'}`
             }`}
           >
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center space-x-3">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium text-white ${
-                  segment.speaker === 'HOST' ? 'bg-blue-500' : 'bg-green-500'
+                  segment.speaker === 'HOST' ? 'bg-[color:var(--accent)]' : 'bg-green-500'
                 }`}>
                   {segment.speaker === 'HOST' ? 'H' : 'G'}
                 </div>
                 <div>
-                  <div className={`font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  <div className={`font-medium ${isDark ? 'theme-text' : 'text-slate-900'}`}>
                     {segment.speaker === 'HOST' ? 'Host' : 'Guest Expert'}
                   </div>
-                  <div className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <div className={`text-xs ${isDark ? 'theme-text-muted' : 'text-slate-500'}`}>
                     {segment.speaker === 'HOST' ? 'Business Journalist' : 'Strategic Analyst'}
                   </div>
                 </div>
@@ -170,7 +170,7 @@ const AutoPlayPodcast: React.FC<{ segments: any[] }> = ({ segments }) => {
               {segment.audio && (
                 <button
                   onClick={() => playFromSegment(index)}
-                  className={`text-sm font-medium ${isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'}`}
+                  className={`text-sm font-medium ${isDark ? 'accent hover:opacity-80' : 'text-blue-600 hover:text-blue-800'}`}
                 >
                   Play from here
                 </button>
@@ -178,7 +178,7 @@ const AutoPlayPodcast: React.FC<{ segments: any[] }> = ({ segments }) => {
             </div>
             
             <div className="mb-3">
-              <p className={`leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{segment.text}</p>
+              <p className={`leading-relaxed ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>{segment.text}</p>
             </div>
             
             {!segment.audio && segment.error && (
@@ -211,7 +211,7 @@ function StudioCard({ title, subtitle, imageSrc, onClick, disabled, isGenerated 
     <button
       onClick={onClick}
       disabled={disabled || isLoading}
-      className={`group relative h-56 w-full overflow-hidden rounded-2xl border ${isDark ? 'theme-card theme-border' : 'border-slate-200 bg-white'} text-left shadow-sm transition focus:outline-none ${
+      className={`group relative h-56 w-full overflow-hidden rounded-2xl border ${isDark ? 'theme-card theme-border hover:border-[color:var(--border-secondary)]' : 'border-slate-200 bg-white'} text-left shadow-sm transition focus:outline-none ${
         disabled || isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md'
       }`}
     >
@@ -221,24 +221,26 @@ function StudioCard({ title, subtitle, imageSrc, onClick, disabled, isGenerated 
       </div>
       <div className="flex h-[calc(100%-7rem)] flex-col justify-between px-3 pb-3 pt-2">
         <div>
-          <div className={`text-sm font-semibold leading-tight ${isDark ? 'text-white' : 'text-slate-800'}`}>{title}</div>
+          <div className={`text-sm font-semibold leading-tight ${isDark ? 'theme-text' : 'text-slate-800'}`}>{title}</div>
           <div className={`mt-1 text-xs leading-tight ${isDark ? 'theme-text-muted' : 'text-slate-500'}`}>{subtitle}</div>
         </div>
       </div>
-      <div className={`pointer-events-none absolute right-3 top-3 inline-flex items-center rounded-full px-2 py-1 text-[10px] font-medium shadow-sm ring-1 backdrop-blur group-hover:bg-white dark:group-hover:bg-slate-900 ${
+      <div className={`pointer-events-none absolute right-3 top-3 inline-flex items-center rounded-full px-2 py-1 text-[10px] font-medium shadow-sm ring-1 backdrop-blur ${
         isGenerated 
           ? 'bg-green-100 text-green-700 ring-green-200' 
-          : 'bg-white/80 text-slate-700 ring-slate-200 dark:bg-slate-800/80 dark:text-slate-100 dark:ring-slate-700'
+          : isDark 
+            ? 'theme-muted theme-text ring-[color:var(--border-primary)] group-hover:theme-card' 
+            : 'bg-white/80 text-slate-700 ring-slate-200 group-hover:bg-white'
       }`}>
         {isGenerated ? 'View' : buttonText}
       </div>
       
       {/* Loading overlay */}
       {isLoading && (
-        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center">
+        <div className={`absolute inset-0 backdrop-blur-sm flex items-center justify-center ${isDark ? 'bg-black/80' : 'bg-white/80'}`}>
           <div className="flex flex-col items-center space-y-2">
-            <div className="w-6 h-6 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
-            <div className="text-xs font-medium text-slate-600">Generating...</div>
+            <div className={`w-6 h-6 border-2 rounded-full animate-spin ${isDark ? 'border-slate-600 border-t-[color:var(--accent)]' : 'border-slate-300 border-t-slate-600'}`}></div>
+            <div className={`text-xs font-medium ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Generating...</div>
           </div>
         </div>
       )}
@@ -390,29 +392,29 @@ function ReportConsoleContent() {
       <div className="space-y-5">
         <button
           onClick={playAll}
-          className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-black"
+          className={`rounded-xl px-4 py-2 text-sm font-medium transition-colors ${isDark ? 'btn-primary' : 'bg-slate-900 text-white hover:bg-black'}`}
         >
           Play All
         </button>
 
         <div className="space-y-3">
           {segments.map((seg, idx) => (
-            <div key={idx} className={`rounded-xl border p-4 transition ${currentIdx===idx && isPlaying ? `${isDark ? 'border-slate-400 bg-slate-800' : 'border-slate-900 bg-slate-50'}` : `${isDark ? 'border-slate-700 hover:border-slate-600' : 'border-slate-200 hover:border-slate-300'}`}`}>
+            <div key={idx} className={`rounded-xl border p-4 transition ${currentIdx===idx && isPlaying ? `${isDark ? 'border-[color:var(--accent)] theme-muted' : 'border-slate-900 bg-slate-50'}` : `${isDark ? 'theme-border hover:border-[color:var(--border-secondary)]' : 'border-slate-200 hover:border-slate-300'}`}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`h-8 w-8 flex items-center justify-center rounded-full text-xs font-semibold ${currentIdx===idx && isPlaying ? `${isDark ? 'bg-slate-400 text-slate-900' : 'bg-slate-900 text-white'}` : `${isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-700'}`}`}>{idx+1}</div>
-                  <div className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{seg.title}</div>
+                  <div className={`h-8 w-8 flex items-center justify-center rounded-full text-xs font-semibold ${currentIdx===idx && isPlaying ? `${isDark ? 'bg-[color:var(--accent)] text-[#0b0b0b]' : 'bg-slate-900 text-white'}` : `${isDark ? 'theme-muted theme-text-secondary' : 'bg-slate-200 text-slate-700'}`}`}>{idx+1}</div>
+                  <div className={`text-sm font-semibold ${isDark ? 'theme-text' : 'text-slate-900'}`}>{seg.title}</div>
                 </div>
                 <div className="flex items-center gap-2">
                   {currentIdx===idx && isPlaying ? (
-                    <button onClick={stop} className={`rounded-lg border px-3 py-1.5 text-xs font-medium ${isDark ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : 'border-slate-300 text-slate-700 hover:bg-slate-50'}`}>Stop</button>
+                    <button onClick={stop} className={`rounded-lg border px-3 py-1.5 text-xs font-medium ${isDark ? 'theme-border theme-text-secondary hover:theme-muted' : 'border-slate-300 text-slate-700 hover:bg-slate-50'}`}>Stop</button>
                   ) : (
-                    <button onClick={() => playIndex(idx)} className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-black">Play</button>
+                    <button onClick={() => playIndex(idx)} className={`rounded-lg px-3 py-1.5 text-xs font-medium ${isDark ? 'btn-primary' : 'bg-slate-900 text-white hover:bg-black'}`}>Play</button>
                   )}
                 </div>
               </div>
               {seg.text && (
-                <p className={`mt-2 text-xs line-clamp-2 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{seg.text}</p>
+                <p className={`mt-2 text-xs line-clamp-2 ${isDark ? 'theme-text-muted' : 'text-slate-600'}`}>{seg.text}</p>
               )}
             </div>
           ))}
@@ -422,6 +424,11 @@ function ReportConsoleContent() {
   };
 
   const handleStudioAction = async (action: string) => {
+    if (!user) {
+      alert('Please sign in to use Studio features');
+      if (typeof window !== 'undefined') window.location.href = '/?auth=1';
+      return;
+    }
     if (!report) {
       alert('No report data available');
       return;
@@ -635,7 +642,7 @@ function ReportConsoleContent() {
     return (
       <div className="h-full flex flex-col">
         {/* Modern Tab Navigation */}
-        <div className={`border-b ${isDark ? 'theme-border theme-card' : 'border-slate-200 bg-white'}`}>
+        <div className={`border-b ${isDark ? 'theme-border' : 'border-slate-200'} ${isDark ? 'theme-card' : 'bg-white'}`}>
           <div className="flex space-x-8 px-6 overflow-x-auto scrollbar-hide">
             {availableTabs.map((tab) => (
               <button
@@ -643,8 +650,8 @@ function ReportConsoleContent() {
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors ${
                   activeTab === tab.id
-                    ? `${isDark ? 'border-white text-white' : 'border-slate-900 text-slate-900'}`
-                    : `border-transparent ${isDark ? 'text-slate-400 hover:border-slate-600 hover:text-slate-200' : 'text-slate-500 hover:border-slate-300 hover:text-slate-700'}`
+                    ? `${isDark ? 'border-[color:var(--accent)] accent' : 'border-slate-900 text-slate-900'}`
+                    : `border-transparent ${isDark ? 'theme-text-muted hover:border-[color:var(--border-secondary)] hover:theme-text-secondary' : 'text-slate-500 hover:border-slate-300 hover:text-slate-700'}`
                 }`}
               >
                 {tab.label}
@@ -780,11 +787,11 @@ function ReportConsoleContent() {
           {activeTab === 'mindmap' && generatedContent.mindmap && (
             <div className="h-full flex flex-col">
               {/* Header with controls */}
-              <div className={`flex-shrink-0 border-b px-6 py-4 ${isDark ? 'border-slate-700 bg-slate-800' : 'border-slate-200 bg-white'}`}>
+              <div className={`flex-shrink-0 border-b px-6 py-4 ${isDark ? 'theme-border theme-card' : 'border-slate-200 bg-white'}`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>Interactive Mind Map</h2>
-                    <p className={`text-sm mt-1 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                    <h2 className={`text-lg font-semibold ${isDark ? 'theme-text' : 'text-slate-900'}`}>Interactive Mind Map</h2>
+                    <p className={`text-sm mt-1 ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>
                       Explore the visual relationship structure with {generatedContent.mindmap.nodes?.length || 0} nodes
                     </p>
                   </div>
@@ -800,7 +807,7 @@ function ReportConsoleContent() {
                                   document.body.removeChild(a);
                                   URL.revokeObjectURL(url);
                                 }}
-                    className={`inline-flex items-center px-3 py-2 border rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${isDark ? 'border-slate-600 text-slate-300 bg-slate-700 hover:bg-slate-600' : 'border-slate-300 text-slate-700 bg-white hover:bg-slate-50'}`}
+                    className={`inline-flex items-center px-3 py-2 border rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 ${isDark ? 'theme-border theme-text-secondary theme-muted hover:theme-card focus:ring-[color:var(--accent)]' : 'border-slate-300 text-slate-700 bg-white hover:bg-slate-50 focus:ring-indigo-500'}`}
                   >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -835,7 +842,7 @@ function ReportConsoleContent() {
               href="/"
               className={`rounded-full px-4 py-2 text-sm font-medium shadow-sm transition-colors ${
                 isDark 
-                  ? 'bg-slate-800 text-white hover:bg-slate-700' 
+                  ? 'btn-primary' 
                   : 'bg-slate-900 text-white hover:bg-black'
               }`}
             >

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
+import { useTheme } from './ThemeToggle';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface AuthModalProps {
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess }) => {
+  const { isDark } = useTheme();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -100,23 +102,23 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
       
       {/* Modal */}
       <div className="relative w-full max-w-md mx-4">
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+        <div className="theme-card rounded-2xl shadow-xl border theme-border overflow-hidden">
           {/* Header */}
-          <div className="px-6 py-4 border-b border-slate-200">
+          <div className="px-6 py-4 border-b theme-border">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-slate-900">
+              <h2 className="text-xl font-semibold">
                 {isLogin ? 'Welcome back' : 'Create account'}
               </h2>
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                className="w-8 h-8 rounded-full flex items-center justify-center theme-text-muted hover:theme-text-secondary hover:theme-muted transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <p className="text-sm text-slate-600 mt-1">
+            <p className="text-sm theme-text-muted mt-1">
               {isLogin ? 'Sign in to access your analyses' : 'Join to save and track your analyses'}
             </p>
           </div>
@@ -125,7 +127,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
           <form onSubmit={handleSubmit} className="px-6 py-6 space-y-4">
             {!isLogin && (
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-2">
+                <label htmlFor="name" className="block text-sm font-medium theme-text-secondary mb-2">
                   Full Name
                 </label>
                 <input
@@ -133,7 +135,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all"
+                  className="w-full px-4 py-3 border theme-border rounded-xl focus:ring-2 focus:outline-none focus:ring-[color:var(--accent)] bg-transparent"
                   placeholder="Enter your full name"
                   required={!isLogin}
                 />
@@ -142,7 +144,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
 
             {!isLogin && (
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium theme-text-secondary mb-2">
                   Choose an avatar
                 </label>
                 <div className="grid grid-cols-6 gap-3">
@@ -151,7 +153,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
                       type="button"
                       key={src}
                       onClick={() => setAvatar(src)}
-                      className={`h-12 w-12 rounded-full overflow-hidden ring-2 transition ${avatar === src ? 'ring-slate-900' : 'ring-transparent hover:ring-slate-300'}`}
+                      className={`h-12 w-12 rounded-full overflow-hidden ring-2 transition ${avatar === src ? 'ring-[color:var(--accent)]' : 'ring-transparent hover:ring-[color:var(--border-secondary)]'}`}
                     >
                       <img src={src} alt="avatar" className="h-full w-full object-cover" />
                     </button>
@@ -162,7 +164,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium theme-text-secondary mb-2">
                 Email address
               </label>
               <input
@@ -170,14 +172,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border theme-border rounded-xl bg-transparent focus:ring-2 focus:outline-none focus:ring-[color:var(--accent)]"
                 placeholder="Enter your email"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium theme-text-secondary mb-2">
                 Password
               </label>
               <input
@@ -185,7 +187,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border theme-border rounded-xl bg-transparent focus:ring-2 focus:outline-none focus:ring-[color:var(--accent)]"
                 placeholder="Enter your password"
                 required
                 minLength={6}
@@ -201,7 +203,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-slate-900 text-white py-3 px-4 rounded-xl font-medium hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full btn-primary py-3 px-4 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center space-x-2">
@@ -215,8 +217,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
           </form>
 
           {/* Footer */}
-          <div className="px-6 py-4 bg-slate-50 border-t border-slate-200">
-            <p className="text-center text-sm text-slate-600">
+          <div className="px-6 py-4 theme-muted border-t theme-border">
+            <p className="text-center text-sm theme-text-muted">
               {isLogin ? "Don't have an account? " : "Already have an account? "}
               <button
                 type="button"
@@ -224,7 +226,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
                   setIsLogin(!isLogin);
                   setError('');
                 }}
-                className="text-slate-900 font-medium hover:underline"
+                className="accent font-medium hover:underline"
               >
                 {isLogin ? 'Sign up' : 'Sign in'}
               </button>

@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useUser } from "../contexts/UserContext";
 import { supabase } from "../../lib/supabaseClient";
 import { UploadCloud, X, FileText } from "lucide-react";
+import { useTheme } from "./ThemeToggle";
 
 export interface SourceFormValues {
   companyAlias: string;
@@ -24,6 +25,7 @@ export default function AddSourcesModal({
   onComplete: (jobId: string, companyAlias: string) => void;
 }) {
   const { user } = useUser();
+  const { isDark } = useTheme();
   const [companyAlias, setCompanyAlias] = useState("");
   const [legalAlias, setLegalAlias] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
@@ -182,15 +184,15 @@ export default function AddSourcesModal({
   const canStart = companyAlias.trim() !== "" && websiteUrl.trim() !== "" && !isProcessing;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur">
-      <div className="w-[1100px] max-w-[98vw] overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur">
+      <div className={`w-[1100px] max-w-[98vw] overflow-hidden rounded-2xl ${isDark ? 'theme-card' : 'bg-white'} ${isDark ? 'theme-border border' : 'ring-1 ring-slate-200'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+        <div className={`flex items-center justify-between border-b ${isDark ? 'theme-border' : 'border-slate-200'} px-6 py-4`}>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-600">New analysis</p>
-            <h2 className="text-xl font-semibold text-slate-900">Create new</h2>
+            <p className={`text-[11px] font-semibold uppercase tracking-wide ${isDark ? 'theme-text-muted' : 'text-slate-600'}`}>New analysis</p>
+            <h2 className={`text-xl font-semibold ${isDark ? 'theme-text' : 'text-slate-900'}`}>Create new</h2>
           </div>
-          <button onClick={onClose} className="rounded-full p-2 text-slate-500 hover:bg-slate-100" aria-label="Close">
+          <button onClick={onClose} className={`rounded-full p-2 ${isDark ? 'theme-text-muted hover:theme-muted' : 'text-slate-500 hover:bg-slate-100'}`} aria-label="Close">
             <X size={18} />
           </button>
         </div>
@@ -200,49 +202,49 @@ export default function AddSourcesModal({
           {/* Left: form */}
           <form className="space-y-5 px-6 py-6">
             <div>
-              <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-600">Company alias</label>
+              <label className={`mb-1 block text-xs font-medium uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Company alias</label>
               <input
                 value={companyAlias}
                 onChange={(e) => setCompanyAlias(e.target.value)}
                 placeholder="e.g. Innovatech"
-                className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm placeholder-slate-400 transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                className={`w-full rounded-lg border ${isDark ? 'theme-border bg-transparent theme-text placeholder:theme-text-muted focus:ring-[color:var(--accent)]' : 'border-slate-300 bg-white placeholder-slate-400 focus:border-slate-400 focus:ring-slate-200'} px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2`}
                 required
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-600">Legal alias</label>
+              <label className={`mb-1 block text-xs font-medium uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Legal alias</label>
               <input
                 value={legalAlias}
                 onChange={(e) => setLegalAlias(e.target.value)}
                 placeholder="e.g. Innovatech Solutions Ltd."
-                className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm placeholder-slate-400 transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                className={`w-full rounded-lg border ${isDark ? 'theme-border bg-transparent theme-text placeholder:theme-text-muted focus:ring-[color:var(--accent)]' : 'border-slate-300 bg-white placeholder-slate-400 focus:border-slate-400 focus:ring-slate-200'} px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2`}
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-600">Website URL</label>
+              <label className={`mb-1 block text-xs font-medium uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Website URL</label>
               <input
                 type="url"
                 value={websiteUrl}
                 onChange={(e) => setWebsiteUrl(e.target.value)}
                 placeholder="https://example.com"
-                className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm placeholder-slate-400 transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                className={`w-full rounded-lg border ${isDark ? 'theme-border bg-transparent theme-text placeholder:theme-text-muted focus:ring-[color:var(--accent)]' : 'border-slate-300 bg-white placeholder-slate-400 focus:border-slate-400 focus:ring-slate-200'} px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2`}
                 required
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-600">Country of incorporation</label>
+              <label className={`mb-1 block text-xs font-medium uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Country of incorporation</label>
               <input
                 value={countryOfIncorporation}
                 onChange={(e) => setCountryOfIncorporation(e.target.value)}
                 placeholder="e.g. Germany, USA"
-                className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm placeholder-slate-400 transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                className={`w-full rounded-lg border ${isDark ? 'theme-border bg-transparent theme-text placeholder:theme-text-muted focus:ring-[color:var(--accent)]' : 'border-slate-300 bg-white placeholder-slate-400 focus:border-slate-400 focus:ring-slate-200'} px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2`}
               />
             </div>
 
             {/* Dropzone-style uploader */}
-            <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-5">
-              <p className="mb-2 text-sm font-medium text-slate-700">Upload sources (optional)</p>
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            <div className={`rounded-xl border border-dashed ${isDark ? 'theme-border theme-muted' : 'border-slate-300 bg-slate-50'} p-5`}>
+              <p className={`mb-2 text-sm font-medium ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>Upload sources (optional)</p>
+              <label className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border ${isDark ? 'theme-border theme-card theme-text hover:theme-muted' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'} px-4 py-2 text-sm font-medium`}>
                 <UploadCloud size={18} />
                 <span>Choose Files</span>
                 <input type="file" multiple onChange={handleFileChange} className="hidden" />
@@ -250,7 +252,7 @@ export default function AddSourcesModal({
               {files.length > 0 && (
                 <ul className="mt-3 flex flex-wrap gap-2">
                   {files.map((f) => (
-                    <li key={f.name} className="inline-flex items-center gap-1 rounded-md bg-white px-2 py-1 text-xs text-slate-700 ring-1 ring-slate-200">
+                    <li key={f.name} className={`inline-flex items-center gap-1 rounded-md ${isDark ? 'theme-card theme-text theme-border border' : 'bg-white text-slate-700 ring-1 ring-slate-200'} px-2 py-1 text-xs`}>
                       <FileText size={14} /> {f.name}
                     </li>
                   ))}
@@ -260,14 +262,14 @@ export default function AddSourcesModal({
 
             {/* Footer */}
             <div className="flex justify-end gap-3 pt-1">
-              <button type="button" onClick={onClose} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+              <button type="button" onClick={onClose} className={`rounded-lg border ${isDark ? 'theme-border theme-card theme-text hover:theme-muted' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'} px-4 py-2 text-sm font-medium`}>
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={startAnalysis}
                 disabled={!canStart}
-                className={`rounded-lg px-4 py-2 text-sm font-medium ${canStart ? "bg-slate-900 text-white hover:bg-black" : "bg-slate-200 text-slate-500"}`}
+                className={`rounded-lg px-4 py-2 text-sm font-medium ${canStart ? (isDark ? 'btn-primary' : 'bg-slate-900 text-white hover:bg-black') : (isDark ? 'theme-muted theme-text-muted' : 'bg-slate-200 text-slate-500')}`}
               >
                 {isProcessing ? "Processing..." : "Create analysis"}
               </button>
@@ -275,15 +277,15 @@ export default function AddSourcesModal({
           </form>
 
           {/* Right: Logs */}
-          <div className="border-t border-slate-200 md:border-l md:border-t-0">
+          <div className={`border-t ${isDark ? 'theme-border' : 'border-slate-200'} md:border-l md:border-t-0`}>
             <div className="px-6 py-6">
               <div className="mb-2 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-slate-800">Process Log</h3>
-                {jobId && <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] text-slate-600">{jobId.slice(0, 8)}</span>}
+                <h3 className={`text-sm font-semibold ${isDark ? 'theme-text' : 'text-slate-800'}`}>Process Log</h3>
+                {jobId && <span className={`rounded-full ${isDark ? 'theme-muted theme-text-muted' : 'bg-slate-100 text-slate-600'} px-2 py-1 text-[10px]`}>{jobId.slice(0, 8)}</span>}
               </div>
-              <div ref={logRef} className="h-[380px] overflow-y-auto rounded-lg bg-slate-50 p-3 text-xs text-slate-800 ring-1 ring-slate-200">
+              <div ref={logRef} className={`h-[380px] overflow-y-auto rounded-lg ${isDark ? 'theme-muted theme-border border' : 'bg-slate-50 ring-1 ring-slate-200'} p-3 text-xs ${isDark ? 'theme-text' : 'text-slate-800'}`}>
                 {logs.length === 0 ? (
-                  <p className="text-slate-400">Logs will appear here…</p>
+                  <p className={`${isDark ? 'theme-text-muted' : 'text-slate-400'}`}>Logs will appear here…</p>
                 ) : (
                   logs.map((l, i) => <p key={i} className="mb-1 font-mono">{l}</p>)
                 )}

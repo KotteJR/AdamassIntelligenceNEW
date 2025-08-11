@@ -48,7 +48,7 @@ export default function ThemeToggle() {
       onClick={toggleTheme}
       className={`h-9 w-9 inline-flex items-center justify-center rounded-full border shadow-sm transition-colors ${
         isDark 
-          ? "bg-slate-800 border-slate-700 text-white hover:bg-slate-700" 
+          ? "theme-card theme-border theme-text hover:theme-muted" 
           : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
       }`}
       aria-label="Toggle theme"

@@ -11,23 +11,44 @@
   --text-muted: #94a3b8;
   --border-primary: #e2e8f0;
   --border-secondary: #cbd5e1;
+  --accent: #1E88E5; /* Material Blue 600 */
 }
 
-/* Dark theme */
+/* Dark theme – Material Design 3 inspired */
 .dark-theme {
-  --bg-primary: #000000;
-  --bg-secondary: #0f172a;
-  --bg-card: #1e293b;
-  --bg-muted: #334155;
-  --text-primary: #ffffff;
-  --text-secondary: #e2e8f0;
-  --text-muted: #94a3b8;
-  --border-primary: #334155;
-  --border-secondary: #475569;
+  /* Surfaces */
+  --bg-primary: #121212;   /* page */
+  --bg-secondary: #121212; /* secondary sections */
+  --bg-card: #1E1E1E;      /* cards/dialogs */
+  --bg-muted: #2C2C2C;     /* subdued blocks */
+
+  /* Typography */
+  --text-primary: #E6E1E5;      /* on-surface */
+  --text-secondary: #CAC4D0;    /* on-surface-variant */
+  --text-muted: #A7A1AA;        /* tertiary */
+
+  /* Borders/Dividers */
+  --border-primary: #49454F;    /* outline */
+  --border-secondary: #3A3A3A;
+
+  /* Accent */
+  --accent: #8AB4F8;           /* Google blue for dark mode */
 }
 
 body {
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Animated gradient helper (used on featured cards) */
+.animate-gradient {
+  background-size: 200% 200% !important;
+  animation: gradientShift 5s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 /* Manual theme classes */
@@ -38,3 +59,46 @@ body {
 .theme-border { border-color: var(--border-primary); }
 .theme-text-secondary { color: var(--text-secondary); }
 .theme-text-muted { color: var(--text-muted); }
+
+/* Accent helpers */
+.accent { color: var(--accent); }
+.btn-primary {
+  background-color: var(--accent);
+  color: #0b0b0b;
+}
+.btn-primary:hover { filter: brightness(1.05); }
+
+/* Complex animated gradient background for featured cards */
+.animated-card { position: relative; overflow: hidden; }
+.animated-card .bg-aurora {
+  position: absolute;
+  inset: -30%;
+  background: conic-gradient(from 0deg at 60% 40%,
+    var(--a1, rgba(14,165,233,0.75)), var(--a2, rgba(139,92,246,0.65)), var(--a3, rgba(236,72,153,0.65)), var(--a1, rgba(14,165,233,0.45)));
+  filter: blur(50px);
+  animation: aurora-spin var(--dur, 8s) linear infinite;
+}
+.animated-card .bg-sheen {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(60% 30% at 0% 0%, rgba(255,255,255,0.1), transparent 60%),
+                    radial-gradient(40% 40% at 100% 100%, rgba(255,255,255,0.12), transparent 60%);
+  animation: sheen-move 12s ease-in-out infinite alternate;
+}
+.animated-card .bg-noise {
+  position: absolute; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+}
+
+@keyframes aurora-spin {
+  0%   { transform: rotate(0deg) scale(1); }
+  50%  { transform: rotate(200deg) scale(1.05); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes sheen-move {
+  0%   { background-position: 0% 0%, 100% 100%; }
+  50%  { background-position: 50% 50%, 50% 50%; }
+  100% { background-position: 100% 100%, 0% 0%; }
+}

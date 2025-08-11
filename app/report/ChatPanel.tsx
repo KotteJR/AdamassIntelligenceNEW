@@ -118,27 +118,27 @@ export default function ChatPanel({ showHeader = false, reportData }: ChatPanelP
   return (
     <div className="flex h-full flex-col">
       {showHeader && (
-        <div className={`border-b px-4 py-3 text-sm font-semibold ${isDark ? 'border-slate-700 text-white' : 'border-slate-200 text-slate-700'}`}>Chat</div>
+        <div className={`border-b px-4 py-3 text-sm font-semibold ${isDark ? 'theme-border theme-text' : 'border-slate-200 text-slate-700'}`}>Chat</div>
       )}
       <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-2 text-sm">
         {messages.map((m, i) => (
           <div key={i} className={`max-w-[85%] rounded-2xl px-3 py-2 shadow-sm ${
             m.role === "user" 
-              ? `ml-auto ${isDark ? 'bg-blue-600 text-white' : 'bg-slate-900 text-white'}` 
-              : `${isDark ? 'bg-slate-800 text-white border border-slate-700' : 'bg-white text-slate-800'}`
+              ? `ml-auto ${isDark ? 'bg-[color:var(--accent)] text-[#0b0b0b]' : 'bg-slate-900 text-white'}` 
+              : `${isDark ? 'theme-card theme-text theme-border border' : 'bg-white text-slate-800'}`
           }`}>
             {m.content}
           </div>
         ))}
         {isLoading && (
-          <div className={`max-w-[85%] rounded-2xl px-3 py-2 shadow-sm ${isDark ? 'bg-slate-800 text-white border border-slate-700' : 'bg-white text-slate-800'}`}>
+          <div className={`max-w-[85%] rounded-2xl px-3 py-2 shadow-sm ${isDark ? 'theme-card theme-text theme-border border' : 'bg-white text-slate-800'}`}>
             <div className="flex items-center gap-2">
               <div className="flex space-x-1">
-                <div className="h-1.5 w-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                <div className="h-1.5 w-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                <div className="h-1.5 w-1.5 bg-blue-400 rounded-full animate-bounce"></div>
+                <div className="h-1.5 w-1.5 bg-[color:var(--accent)] rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                <div className="h-1.5 w-1.5 bg-[color:var(--accent)] rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                <div className="h-1.5 w-1.5 bg-[color:var(--accent)] rounded-full animate-bounce"></div>
               </div>
-              <span className={`text-xs ${isDark ? 'text-slate-200' : 'text-slate-500'}`}>Thinking...</span>
+              <span className={`text-xs ${isDark ? 'theme-text-secondary' : 'text-slate-500'}`}>Thinking...</span>
             </div>
           </div>
         )}
@@ -153,7 +153,7 @@ export default function ChatPanel({ showHeader = false, reportData }: ChatPanelP
             disabled={isLoading}
             className={`flex-1 rounded-xl border px-3 py-2.5 text-sm leading-none focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed ${
               isDark 
-                ? 'border-slate-600 bg-slate-900 text-white placeholder-slate-400 focus:border-blue-400 focus:ring-blue-400/50' 
+                ? 'theme-border theme-muted theme-text placeholder:theme-text-muted focus:ring-[color:var(--accent)]' 
                 : 'border-slate-300 bg-white focus:border-blue-500 focus:ring-blue-500'
             }`}
           />
@@ -161,10 +161,10 @@ export default function ChatPanel({ showHeader = false, reportData }: ChatPanelP
             onClick={send}
             disabled={isLoading || !input.trim()}
             aria-label="Send"
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl disabled:opacity-50 disabled:cursor-not-allowed ${
               isDark 
-                ? 'bg-blue-600 hover:bg-blue-700' 
-                : 'bg-black hover:bg-slate-900'
+                ? 'btn-primary' 
+                : 'bg-black text-white hover:bg-slate-900'
             }`}
           >
             <Send size={16} />

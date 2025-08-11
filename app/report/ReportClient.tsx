@@ -59,8 +59,8 @@ const DetailedInfoCard: React.FC<DetailedInfoCardProps> = ({
   const { isDark } = useTheme();
   return (
     <div className={`border rounded-xl overflow-hidden ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
-      <div className={`px-6 py-4 border-b ${isDark ? 'theme-border theme-bg-secondary' : 'border-slate-200 bg-slate-50'}`}>
-        <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{title}</h3>
+      <div className={`px-6 py-4 border-b ${isDark ? 'theme-border theme-muted' : 'border-slate-200 bg-slate-50'}`}>
+        <h3 className={`text-lg font-semibold ${isDark ? 'theme-text' : 'text-slate-900'}`}>{title}</h3>
       </div>
       <div className="p-6">
         <div className={gridCols ? `grid gap-6 ${gridCols}` : ''}>
@@ -68,8 +68,8 @@ const DetailedInfoCard: React.FC<DetailedInfoCardProps> = ({
             <div className={`${gridCols ? 'col-span-1' : ''} ${analysisText && !gridCols ? 'mb-6' : ''}`}>
               <ul className="space-y-3">
                 {items.map((item, idx) => (
-                  <li key={idx} className={`flex items-start gap-3 ${isDark ? 'text-slate-300' : 'text-slate-700'} ${itemClassName}`}>
-                    <div className={`w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 ${isDark ? 'bg-slate-500' : 'bg-slate-400'}`}></div>
+                  <li key={idx} className={`flex items-start gap-3 ${isDark ? 'theme-text-secondary' : 'text-slate-700'} ${itemClassName}`}>
+                    <div className={`w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 ${isDark ? 'theme-text-muted' : 'bg-slate-400'}`}></div>
                     <span className="text-sm">{typeof item === 'string' || typeof item === 'number' ? item : JSON.stringify(item)}</span>
                   </li>
                 ))}
@@ -79,7 +79,7 @@ const DetailedInfoCard: React.FC<DetailedInfoCardProps> = ({
 
           {analysisText && (
              <div className={`${gridCols && items && items.length > 0 ? 'col-span-1' : ''} ${!gridCols && items && items.length === 0 ? 'mt-0' : gridCols ? 'md:mt-0' : 'mt-4' }`}>
-              {analysisTitle && <h4 className={`text-sm font-semibold mb-3 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>{analysisTitle}</h4>}
+              {analysisTitle && <h4 className={`text-sm font-semibold mb-3 ${isDark ? 'theme-text-secondary' : 'text-slate-800'}`}>{analysisTitle}</h4>}
               <p className={`whitespace-pre-line leading-relaxed text-sm ${isDark ? 'theme-text-muted' : 'text-slate-600'}`}>{analysisText}</p>
             </div>
           )}
@@ -156,7 +156,7 @@ const ReportClient = () => {
     const [isExpanded, setIsExpanded] = useState(false);
 
     if (!data || typeof data !== 'object' || data.error) {
-      return <p className={`italic text-sm ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Data not available or error in processing.</p>;
+      return <p className={`italic text-sm ${isDark ? 'theme-text-muted' : 'text-slate-400'}`}>Data not available or error in processing.</p>;
     }
 
     const hasExpandableContent = data.text && data.text.length > 300;
@@ -165,18 +165,18 @@ const ReportClient = () => {
     return (
       <div className="space-y-4">
         {data.highlight && (
-          <div className={`border-l-4 p-4 rounded-r-lg ${isDark ? 'bg-slate-800 border-slate-600' : 'bg-slate-50 border-slate-400'}`}>
-            <p className={`text-base font-medium ${isDark ? 'text-white' : 'text-slate-800'}`}>{data.highlight}</p>
+          <div className={`border-l-4 p-4 rounded-r-lg ${isDark ? 'theme-muted border-[color:var(--border-secondary)]' : 'bg-slate-50 border-slate-400'}`}>
+            <p className={`text-base font-medium ${isDark ? 'theme-text' : 'text-slate-800'}`}>{data.highlight}</p>
           </div>
         )}
         {data.preview && <p className={`text-sm leading-relaxed ${isDark ? 'theme-text-muted' : 'text-slate-600'}`}>{data.preview}</p>}
         {data.text && (
           <div className="relative">
-            <p className={`text-sm leading-relaxed whitespace-pre-line ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{displayText}</p>
+            <p className={`text-sm leading-relaxed whitespace-pre-line ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>{displayText}</p>
             {hasExpandableContent && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className={`mt-2 text-sm font-medium flex items-center gap-1 group ${isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`mt-2 text-sm font-medium flex items-center gap-1 group ${isDark ? 'theme-text-muted hover:theme-text-secondary' : 'text-slate-500 hover:text-slate-700'}`}
               >
                 {isExpanded ? (
                   <>
@@ -234,34 +234,34 @@ const ReportClient = () => {
             {architecture?.overall_score !== undefined && (
               <div className={`p-6 border rounded-xl ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
                 <div className="flex items-center gap-3 mb-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-6 h-6 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-6 h-6 ${isDark ? 'theme-text-muted' : 'text-slate-600'}`}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h6.75M9 12h6.75m-6.75 5.25h6.75M5.25 21v-18a2.25 2.25 0 0 1 2.25-2.25h9a2.25 2.25 0 0 1 2.25 2.25v18" />
                   </svg>
-                  <h3 className={`text-base font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Architecture Score</h3>
+                  <h3 className={`text-base font-medium ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>Architecture Score</h3>
                 </div>
-                <p className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{architecture.overall_score}/10</p>
+                <p className={`text-3xl font-bold ${isDark ? 'theme-text' : 'text-slate-900'}`}>{architecture.overall_score}/10</p>
               </div>
             )}
             {security?.overall_score !== undefined && (
               <div className={`p-6 border rounded-xl ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
                  <div className="flex items-center gap-3 mb-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-6 h-6 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-6 h-6 ${isDark ? 'theme-text-muted' : 'text-slate-600'}`}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622A11.99 11.99 0 0 0 18.402 6a11.959 11.959 0 0 1-1.043-.751" />
                   </svg>
-                  <h3 className={`text-base font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Security Score</h3>
+                  <h3 className={`text-base font-medium ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>Security Score</h3>
                 </div>
-                <p className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{security.overall_score}/10</p>
+                <p className={`text-3xl font-bold ${isDark ? 'theme-text' : 'text-slate-900'}`}>{security.overall_score}/10</p>
               </div>
             )}
             {report?.adamassSynthesisReport?.overall_assessment?.confidence_score !== undefined && (
               <div className={`p-6 border rounded-xl ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
                 <div className="flex items-center gap-3 mb-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-6 h-6 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-6 h-6 ${isDark ? 'theme-text-muted' : 'text-slate-600'}`}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456Z" />
                   </svg>
-                  <h3 className={`text-base font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Adamass Confidence</h3>
+                  <h3 className={`text-base font-medium ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>Adamass Confidence</h3>
                 </div>
-                <p className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                <p className={`text-3xl font-bold ${isDark ? 'theme-text' : 'text-slate-900'}`}>
                   {parseFloat(report.adamassSynthesisReport.overall_assessment.confidence_score).toFixed(1)}/10
                 </p>
               </div>
@@ -276,9 +276,9 @@ const ReportClient = () => {
               {/* Executive Summary */}
               {report.adamassSynthesisReport.executive_summary && (
                 <div> 
-                  <h3 className={`text-lg font-semibold mb-3 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>Executive Summary</h3>
-                  <div className={`border-l-4 p-4 rounded-r-lg ${isDark ? 'bg-slate-800 border-slate-600' : 'bg-slate-50 border-slate-400'}`}>
-                    <p className={`leading-relaxed text-sm ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                  <h3 className={`text-lg font-semibold mb-3 ${isDark ? 'theme-text-secondary' : 'text-slate-800'}`}>Executive Summary</h3>
+                  <div className={`border-l-4 p-4 rounded-r-lg ${isDark ? 'theme-muted border-[color:var(--border-secondary)]' : 'bg-slate-50 border-slate-400'}`}>
+                    <p className={`leading-relaxed text-sm ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>
                       {report.adamassSynthesisReport.executive_summary}
                     </p>
                   </div>
@@ -288,27 +288,27 @@ const ReportClient = () => {
               {/* Overall Assessment */}
               {report.adamassSynthesisReport.overall_assessment && (
                 <div>
-                  <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>Overall Assessment</h3>
+                  <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'theme-text-secondary' : 'text-slate-800'}`}>Overall Assessment</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div className={`border rounded-lg p-4 ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
-                        <p className={`text-xs mb-1 uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Verdict</p>
-                        <p className={`text-xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{report.adamassSynthesisReport.overall_assessment.verdict}</p>
+                        <p className={`text-xs mb-1 uppercase tracking-wider ${isDark ? 'theme-text-muted' : 'text-slate-500'}`}>Verdict</p>
+                        <p className={`text-xl font-bold ${isDark ? 'theme-text' : 'text-slate-900'}`}>{report.adamassSynthesisReport.overall_assessment.verdict}</p>
                       </div>
                       <div className={`border rounded-lg p-4 ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
-                        <p className={`text-xs mb-1 uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Confidence Score</p>
+                        <p className={`text-xs mb-1 uppercase tracking-wider ${isDark ? 'theme-text-muted' : 'text-slate-500'}`}>Confidence Score</p>
                         <div className="flex items-baseline">
-                          <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                          <p className={`text-2xl font-bold ${isDark ? 'theme-text' : 'text-slate-900'}`}>
                             {parseFloat(report.adamassSynthesisReport.overall_assessment.confidence_score).toFixed(1)}
                           </p>
-                          <span className={`text-lg ml-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>/ 10</span>
+                          <span className={`text-lg ml-1 ${isDark ? 'theme-text-muted' : 'text-slate-500'}`}>/ 10</span>
                         </div>
                       </div>
                     </div>
                     <div>
-                      <p className={`text-xs mb-2 uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Key Rationale</p>
-                      <div className={`border p-4 rounded-lg ${isDark ? 'bg-slate-800 theme-border' : 'bg-slate-50 border-slate-200'}`}>
-                         <p className={`leading-relaxed text-sm ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{report.adamassSynthesisReport.overall_assessment.key_rationale}</p>
+                      <p className={`text-xs mb-2 uppercase tracking-wider ${isDark ? 'theme-text-muted' : 'text-slate-500'}`}>Key Rationale</p>
+                      <div className={`border p-4 rounded-lg ${isDark ? 'theme-muted theme-border' : 'bg-slate-50 border-slate-200'}`}>
+                         <p className={`leading-relaxed text-sm ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>{report.adamassSynthesisReport.overall_assessment.key_rationale}</p>
                       </div>
                     </div>
                   </div>
@@ -390,10 +390,10 @@ const ReportClient = () => {
               {/* Strategic Recommendations */}
               {report.adamassSynthesisReport.strategic_recommendations && report.adamassSynthesisReport.strategic_recommendations.length > 0 && (
                  <div>
-                  <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>Strategic Recommendations</h3>
+                  <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'theme-text-secondary' : 'text-slate-800'}`}>Strategic Recommendations</h3>
                   <div className="space-y-4">
                     {report.adamassSynthesisReport.strategic_recommendations.map((rec: any, index: number) => (
-                      <div key={rec.id || index} className={`border rounded-lg p-4 border-l-4 border-slate-400 ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
+                      <div key={rec.id || index} className={`border rounded-lg p-4 border-l-4 ${isDark ? 'theme-card theme-border border-l-[color:var(--border-secondary)]' : 'bg-white border-slate-200 border-l-slate-400'}`}>
                          <StrategicRecommendationItem recommendation={rec} index={index} />
                       </div>
                     ))}
@@ -404,9 +404,9 @@ const ReportClient = () => {
               {/* Closing Statement */}
               {report.adamassSynthesisReport.closing_statement && (
                 <div> 
-                  <h3 className={`text-lg font-semibold mb-3 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>Closing Statement</h3>
-                  <div className="bg-slate-50 border-l-4 border-slate-400 p-4 rounded-r-lg">
-                    <p className={`leading-relaxed text-sm ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                  <h3 className={`text-lg font-semibold mb-3 ${isDark ? 'theme-text-secondary' : 'text-slate-800'}`}>Closing Statement</h3>
+                  <div className={`border-l-4 p-4 rounded-r-lg ${isDark ? 'theme-muted border-l-[color:var(--border-secondary)]' : 'bg-slate-50 border-l-slate-400'}`}>
+                    <p className={`leading-relaxed text-sm ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>
                       {report.adamassSynthesisReport.closing_statement}
                     </p>
                   </div>
@@ -627,30 +627,30 @@ const ReportClient = () => {
               <DetailedInfoCard title="Company Overview">
                 <div className="space-y-6">
                   <div className="space-y-4">
-                    <p className="text-slate-600 leading-relaxed text-sm">{companyIntelligence.company_overview?.overview || 'No overview available.'}</p>
+                    <p className={`leading-relaxed text-sm ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>{companyIntelligence.company_overview?.overview || 'No overview available.'}</p>
                     {companyIntelligence.company_overview?.company_mission && (
-                      <div className="p-4 bg-slate-50 border-l-4 border-slate-400 rounded-r-lg">
-                        <h4 className="text-sm font-semibold text-slate-800 mb-2">Mission Statement</h4>
-                        <p className={`whitespace-pre-line leading-relaxed text-sm ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{companyIntelligence.company_overview.company_mission}</p>
+                      <div className={`p-4 border-l-4 rounded-r-lg ${isDark ? 'theme-muted border-[color:var(--border-secondary)]' : 'bg-slate-50 border-slate-400'}`}>
+                        <h4 className={`text-sm font-semibold mb-2 ${isDark ? 'theme-text' : 'text-slate-800'}`}>Mission Statement</h4>
+                        <p className={`whitespace-pre-line leading-relaxed text-sm ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>{companyIntelligence.company_overview.company_mission}</p>
                       </div>
                     )}
                   </div>
 
                   <div>
-                     <h4 className="text-sm font-semibold text-slate-800 mb-3">Key Information</h4>
+                     <h4 className={`text-sm font-semibold mb-3 ${isDark ? 'theme-text' : 'text-slate-800'}`}>Key Information</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {(['official_company_name', 'industry', 'headquarters', 'founding_date', 'number_of_employees', 'website'] as const).map(key => {
                         const value = companyIntelligence.company_overview?.[key];
                         const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                         if (!value) return null;
                         return (
-                          <div key={key} className={`p-3 border rounded-lg ${isDark ? 'bg-slate-800 theme-border' : 'bg-slate-50 border-slate-200'}`}>
-                            <dt className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{label}</dt>
-                            <dd className={`mt-1 text-sm ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                          <div key={key} className={`p-3 border rounded-lg ${isDark ? 'theme-muted theme-border' : 'bg-slate-50 border-slate-200'}`}>
+                            <dt className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'theme-text-muted' : 'text-slate-500'}`}>{label}</dt>
+                            <dd className={`mt-1 text-sm ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>
                               {key === 'website' && typeof value === 'string' ? 
-                                <a href={value} target="_blank" rel="noopener noreferrer" className={`hover:underline ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{value}</a> : 
+                                <a href={value} target="_blank" rel="noopener noreferrer" className={`hover:underline ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>{value}</a> : 
                               key === 'industry' && typeof value === 'string' ?
-                                <span className={`px-2 py-0.5 rounded-lg text-xs font-medium ${isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200 text-slate-700'}`}>{value}</span> :
+                                <span className={`px-2 py-0.5 rounded-lg text-xs font-medium ${isDark ? 'theme-card theme-text' : 'bg-slate-200 text-slate-700'}`}>{value}</span> :
                                 String(value)
                               }
                             </dd>
@@ -710,17 +710,17 @@ const ReportClient = () => {
                     const value = companyIntelligence.financials_metrics?.[key];
                     const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                     return (
-                      <div key={key} className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                        <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider">{label}</dt>
-                        <dd className="mt-1 text-sm font-semibold text-gray-700">{String(value ?? 'N/A')}</dd>
+                      <div key={key} className={`p-3 border rounded-lg ${isDark ? 'theme-muted theme-border' : 'bg-gray-50 border-gray-200'}`}>
+                        <dt className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'theme-text-muted' : 'text-gray-500'}`}>{label}</dt>
+                        <dd className={`mt-1 text-sm font-semibold ${isDark ? 'theme-text-secondary' : 'text-gray-700'}`}>{String(value ?? 'N/A')}</dd>
                       </div>
                     );
                   })}
                 </div>
                 {companyIntelligence.financials_metrics?.growth_scores && Object.keys(companyIntelligence.financials_metrics.growth_scores).length > 0 && (
                   <div className="mb-6">
-                    <h4 className="text-md font-semibold text-slate-700 mb-2">Growth Scores (YoY):</h4>
-                    <ul className="list-disc list-inside text-slate-600 space-y-1 text-sm">
+                    <h4 className={`text-md font-semibold mb-2 ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>Growth Scores (YoY):</h4>
+                    <ul className={`list-disc list-inside space-y-1 text-sm ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>
                       {Object.entries(companyIntelligence.financials_metrics.growth_scores).map(([year, score]) => (
                         <li key={year}>{year}: {String(score)}</li>
                       ))}
@@ -728,15 +728,15 @@ const ReportClient = () => {
                   </div>
                 )}
                 {companyIntelligence.financials_metrics?.financial_commentary && 
-                  <div className="p-4 bg-slate-50 border-l-4 border-slate-400 rounded-r-lg mb-4">
-                    <h4 className="text-sm font-semibold text-slate-800 mb-2">Financial Commentary</h4>
-                    <p className={`whitespace-pre-line leading-relaxed text-sm ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{companyIntelligence.financials_metrics.financial_commentary}</p>
+                  <div className={`p-4 border-l-4 rounded-r-lg mb-4 ${isDark ? 'theme-muted border-l-[color:var(--border-secondary)]' : 'bg-slate-50 border-l-slate-400'}`}>
+                    <h4 className={`text-sm font-semibold mb-2 ${isDark ? 'theme-text' : 'text-slate-800'}`}>Financial Commentary</h4>
+                    <p className={`whitespace-pre-line leading-relaxed text-sm ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>{companyIntelligence.financials_metrics.financial_commentary}</p>
                   </div>
                 }
                 {companyIntelligence.financials_metrics?.financial_metrics_analysis && 
-                  <div className="p-4 bg-slate-50 border-l-4 border-slate-400 rounded-r-lg">
-                    <h4 className="text-sm font-semibold text-slate-800 mb-2">Financial Metrics Deep Dive</h4>
-                    <p className={`whitespace-pre-line leading-relaxed text-sm ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{companyIntelligence.financials_metrics.financial_metrics_analysis}</p>
+                  <div className={`p-4 border-l-4 rounded-r-lg ${isDark ? 'theme-muted border-l-[color:var(--border-secondary)]' : 'bg-slate-50 border-l-slate-400'}`}>
+                    <h4 className={`text-sm font-semibold mb-2 ${isDark ? 'theme-text' : 'text-slate-800'}`}>Financial Metrics Deep Dive</h4>
+                    <p className={`whitespace-pre-line leading-relaxed text-sm ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>{companyIntelligence.financials_metrics.financial_metrics_analysis}</p>
                   </div>
                 }
               </DetailedInfoCard>
@@ -745,27 +745,27 @@ const ReportClient = () => {
                 {companyIntelligence.funding_rounds?.rounds?.length > 0 ? (
                   <div className="space-y-4 mb-6">
                     {companyIntelligence.funding_rounds.rounds.map((round: any, idx: number) => (
-                      <div key={idx} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <h5 className="font-semibold text-blue-700 text-base mb-1">{round.round_name || 'Round'} <span className="text-gray-500 text-xs font-normal">({round.date})</span></h5>
-                        <p className="text-gray-600 text-xs">Amount: {round.amount_raised || 'N/A'}</p>
-                        <p className="text-gray-600 text-xs">Investors: {round.number_of_investors ?? 'N/A'} {round.lead_investors?.length > 0 ? `(Lead: ${round.lead_investors.join(', ')})` : ''}</p>
+                      <div key={idx} className={`p-4 rounded-lg border ${isDark ? 'theme-muted theme-border' : 'bg-gray-50 border-gray-200'}`}>
+                        <h5 className={`font-semibold text-base mb-1 ${isDark ? 'accent' : 'text-blue-700'}`}>{round.round_name || 'Round'} <span className={`text-xs font-normal ${isDark ? 'theme-text-muted' : 'text-gray-500'}`}>({round.date})</span></h5>
+                        <p className={`text-xs ${isDark ? 'theme-text-secondary' : 'text-gray-600'}`}>Amount: {round.amount_raised || 'N/A'}</p>
+                        <p className={`text-xs ${isDark ? 'theme-text-secondary' : 'text-gray-600'}`}>Investors: {round.number_of_investors ?? 'N/A'} {round.lead_investors?.length > 0 ? `(Lead: ${round.lead_investors.join(', ')})` : ''}</p>
                       </div>
                     ))}
                   </div>
-                ) : <p className="text-gray-500 italic mb-6 text-sm">No funding rounds listed.</p>}
+                ) : <p className={`italic mb-6 text-sm ${isDark ? 'theme-text-muted' : 'text-gray-500'}`}>No funding rounds listed.</p>}
                 {companyIntelligence.funding_rounds?.total_funding_amount && (
-                  <p className="text-gray-700 mb-4 text-sm"><strong>Total Funding:</strong> <span className="font-semibold">{companyIntelligence.funding_rounds.total_funding_amount}</span></p>
+                  <p className={`mb-4 text-sm ${isDark ? 'theme-text-secondary' : 'text-gray-700'}`}><strong>Total Funding:</strong> <span className="font-semibold">{companyIntelligence.funding_rounds.total_funding_amount}</span></p>
                 )}
                 {companyIntelligence.funding_rounds?.funding_commentary && 
-                  <div className="p-4 bg-slate-50 border-l-4 border-slate-400 rounded-r-lg mb-4">
-                     <h4 className="text-sm font-semibold text-slate-800 mb-2">Funding Commentary</h4>
-                     <p className={`whitespace-pre-line leading-relaxed text-sm ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{companyIntelligence.funding_rounds.funding_commentary}</p>
+                  <div className={`p-4 border-l-4 rounded-r-lg mb-4 ${isDark ? 'theme-muted border-l-[color:var(--border-secondary)]' : 'bg-slate-50 border-l-slate-400'}`}>
+                     <h4 className={`text-sm font-semibold mb-2 ${isDark ? 'theme-text' : 'text-slate-800'}`}>Funding Commentary</h4>
+                     <p className={`whitespace-pre-line leading-relaxed text-sm ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>{companyIntelligence.funding_rounds.funding_commentary}</p>
                   </div>
                 }
                 {companyIntelligence.funding_rounds?.funding_rounds_analysis && 
-                  <div className="p-4 bg-slate-50 border-l-4 border-slate-400 rounded-r-lg">
-                     <h4 className="text-sm font-semibold text-slate-800 mb-2">Detailed Funding Analysis</h4>
-                     <p className={`whitespace-pre-line leading-relaxed text-sm ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{companyIntelligence.funding_rounds.funding_rounds_analysis}</p>
+                  <div className={`p-4 border-l-4 rounded-r-lg ${isDark ? 'theme-muted border-l-[color:var(--border-secondary)]' : 'bg-slate-50 border-l-slate-400'}`}>
+                     <h4 className={`text-sm font-semibold mb-2 ${isDark ? 'theme-text' : 'text-slate-800'}`}>Detailed Funding Analysis</h4>
+                     <p className={`whitespace-pre-line leading-relaxed text-sm ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>{companyIntelligence.funding_rounds.funding_rounds_analysis}</p>
                   </div>
                 }
               </DetailedInfoCard>
@@ -786,47 +786,47 @@ const ReportClient = () => {
                 {companyIntelligence.news_press?.length > 0 ? (
                   <div className="space-y-4 mt-4">
                     {companyIntelligence.news_press.map((item: any, idx: number) => (
-                      <div key={idx} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <h5 className="font-semibold text-gray-800 text-base mb-0.5">{item.headline || 'No headline'}</h5>
-                        <p className="text-gray-500 text-xs mb-1">{item.date || 'No date'} - {item.publication || 'N/A'}</p>
-                        <p className="text-gray-600 text-sm mb-1">{item.summary || 'No summary available'}</p>
-                        {item.link && <a href={item.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs font-medium">Read more &rarr;</a>}
+                      <div key={idx} className={`p-4 rounded-lg border ${isDark ? 'theme-muted theme-border' : 'bg-gray-50 border-gray-200'}`}>
+                        <h5 className={`font-semibold text-base mb-0.5 ${isDark ? 'theme-text' : 'text-gray-800'}`}>{item.headline || 'No headline'}</h5>
+                        <p className={`text-xs mb-1 ${isDark ? 'theme-text-muted' : 'text-gray-500'}`}>{item.date || 'No date'} - {item.publication || 'N/A'}</p>
+                        <p className={`text-sm mb-1 ${isDark ? 'theme-text-secondary' : 'text-gray-600'}`}>{item.summary || 'No summary available'}</p>
+                        {item.link && <a href={item.link} target="_blank" rel="noopener noreferrer" className={`text-xs font-medium hover:underline ${isDark ? 'accent' : 'text-blue-600'}`}>Read more &rarr;</a>}
                       </div>
                     ))}
                   </div>
-                ) : <p className="text-gray-500 italic mt-4 text-sm">No recent news available.</p>}
+                ) : <p className={`italic mt-4 text-sm ${isDark ? 'theme-text-muted' : 'text-gray-500'}`}>No recent news available.</p>}
               </DetailedInfoCard>
 
               {/* Team & Contact Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10">
                 <DetailedInfoCard title="People">
-                  <h4 className="text-md font-semibold text-gray-700 mb-3 mt-[-10px]">Founders</h4>
+                  <h4 className={`text-md font-semibold mb-3 mt-[-10px] ${isDark ? 'theme-text-secondary' : 'text-gray-700'}`}>Founders</h4>
                   {companyIntelligence.company_overview?.founders && companyIntelligence.company_overview.founders.length > 0 ? (
                      <ul className="space-y-2 mb-6">
                       {companyIntelligence.company_overview.founders.map((f: any, idx: number) => (
-                        <li key={idx} className={`flex items-start gap-2 text-gray-600 text-sm`}>
-                          <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" /></svg>
+                        <li key={idx} className={`flex items-start gap-2 text-sm ${isDark ? 'theme-text-secondary' : 'text-gray-600'}`}>
+                          <svg className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDark ? 'theme-text-muted' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" /></svg>
                           <span>{typeof f === 'object' && f !== null && 'name' in f ? `${f.name}${f.role ? ` (${f.role})` : ''}` : String(f)}</span>
                         </li>
                       ))}
                     </ul>
-                  ) : <p className="text-gray-500 italic text-sm mb-6">No founders listed.</p>}
+                  ) : <p className={`italic text-sm mb-6 ${isDark ? 'theme-text-muted' : 'text-gray-500'}`}>No founders listed.</p>}
                   
-                  <h4 className="text-md font-semibold text-gray-700 mb-3">Key Team Members</h4>
+                  <h4 className={`text-md font-semibold mb-3 ${isDark ? 'theme-text-secondary' : 'text-gray-700'}`}>Key Team Members</h4>
                    {companyIntelligence.company_overview?.key_team_members && companyIntelligence.company_overview.key_team_members.length > 0 ? (
                     <ul className="space-y-2">
                       {companyIntelligence.company_overview.key_team_members.map((m: any, idx: number) => (
-                        <li key={idx} className={`flex items-start gap-2 text-gray-600 text-sm`}>
-                           <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" /></svg>
+                        <li key={idx} className={`flex items-start gap-2 text-sm ${isDark ? 'theme-text-secondary' : 'text-gray-600'}`}>
+                           <svg className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDark ? 'theme-text-muted' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" /></svg>
                           <span>{typeof m === 'object' && m !== null && 'name' in m ? `${m.name}${m.role ? ` (${m.role})` : ''}` : String(m)}</span>
                         </li>
                       ))}
                     </ul>
-                  ) : <p className="text-gray-500 italic text-sm">No key team members listed.</p>}
+                  ) : <p className={`italic text-sm ${isDark ? 'theme-text-muted' : 'text-gray-500'}`}>No key team members listed.</p>}
                 </DetailedInfoCard>
                 
                 <DetailedInfoCard title="Contact Information">
-                  <ul className="text-gray-700 space-y-1 text-sm">
+                  <ul className={`space-y-1 text-sm ${isDark ? 'theme-text-secondary' : 'text-gray-700'}`}>
                     <li><strong>Email:</strong> {companyIntelligence.contact_information?.email || 'N/A'}</li>
                     <li><strong>Phone:</strong> {companyIntelligence.contact_information?.phone || 'N/A'}</li>
                     <li><strong>Address:</strong> {companyIntelligence.contact_information?.address || 'N/A'}</li>
@@ -839,7 +839,7 @@ const ReportClient = () => {
                 </DetailedInfoCard>
               </div>
             </div>
-          ) : <p className="text-slate-400 italic text-sm">No company intelligence data available.</p>}
+          ) : <p className={`italic text-sm ${isDark ? 'theme-text-muted' : 'text-slate-400'}`}>No company intelligence data available.</p>}
         </SectionCard>
       </div>
     </main>
