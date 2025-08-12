@@ -120,55 +120,48 @@ export default function AddSourcesModal({
         dateGenerated: new Date().toISOString(),
         ...processJson,
       };
+
+      // Save to both local Storage (for backward compatibility) and Supabase
       await fetch("/api/reports", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(finalReportToSave),
       });
 
-      // Save to user profile if logged in, otherwise use localStorage
-      if (user) {
-        try {
-          const { error } = await supabase
-            .from('user_analyses')
-            .insert([
-              {
-                user_id: user.id,
-                job_id: newJob,
-                company_alias: companyAlias,
-                legal_alias: legalAlias,
-                website_url: websiteUrl,
-                country_of_incorporation: countryOfIncorporation,
-                report_data: processJson
-              }
-            ]);
+      // Always try to save to Supabase user_analyses for both logged in and anonymous users
+      try {
+        const { error } = await supabase
+          .from('user_analyses')
+          .insert([
+            {
+              user_id: user?.id || null, // Allow null for anonymous users
+              job_id: newJob,
+              company_alias: companyAlias,
+              legal_alias: legalAlias,
+              website_url: websiteUrl,
+              country_of_incorporation: countryOfIncorporation,
+              report_data: processJson
+            }
+          ]);
 
-          if (error) {
-            console.error('Error saving to user profile:', error);
-            // Fallback to localStorage if Supabase fails
-            throw error;
-          }
-          
-          addLog("Analysis saved to your profile.");
-        } catch (error) {
-          console.error('Failed to save to user profile, using local storage:', error);
-          // Fallback to localStorage
-          try {
-            const key = "myReports";
-            const existing = JSON.parse(localStorage.getItem(key) || "[]");
-            const updated = Array.isArray(existing) ? Array.from(new Set([...existing, newJob])) : [newJob];
-            localStorage.setItem(key, JSON.stringify(updated));
-          } catch {}
+        if (error) {
+          console.error('Error saving to user_analyses:', error);
+          addLog("Analysis completed. Saved locally.");
+        } else {
+          addLog("Analysis completed and saved successfully.");
         }
-      } else {
-        // Use localStorage for non-authenticated users
-        try {
-          const key = "myReports";
-          const existing = JSON.parse(localStorage.getItem(key) || "[]");
-          const updated = Array.isArray(existing) ? Array.from(new Set([...existing, newJob])) : [newJob];
-          localStorage.setItem(key, JSON.stringify(updated));
-        } catch {}
+      } catch (error) {
+        console.error('Failed to save to user_analyses:', error);
+        addLog("Analysis completed. Saved locally.");
       }
+
+      // Keep localStorage for backward compatibility with existing reports
+      try {
+        const key = "myReports";
+        const existing = JSON.parse(localStorage.getItem(key) || "[]");
+        const updated = Array.isArray(existing) ? Array.from(new Set([...existing, newJob])) : [newJob];
+        localStorage.setItem(key, JSON.stringify(updated));
+      } catch {}
 
       if (typeof window !== "undefined") localStorage.setItem("currentJobId", newJob);
       addLog("Report complete. Opening analysis view...");

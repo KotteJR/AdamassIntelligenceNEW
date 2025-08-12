@@ -27,17 +27,24 @@ export async function POST(req: Request) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout for n8n
 
+    // Match the exact structure expected by the n8n workflow (nested under "body")
+    const payload = {
+      body: {
+        job_id: jobId,
+        url: websiteUrl,
+        company_name: companyAlias,
+        legal_name: legalAlias || companyAlias,
+        country: countryOfIncorporation || 'Unknown'
+      }
+    };
+
     console.log(`[API /initiate-analysis] Triggering n8n workflow for job_id: ${jobId} at URL: ${n8nUrl.toString()}`);
+    console.log(`[API /initiate-analysis] Payload:`, JSON.stringify(payload, null, 2));
+    
     const n8nResponse = await fetch(n8nUrl.toString(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        company_name: companyAlias, // Aligning with your existing n8n payload
-        legal_name: legalAlias,
-        url: websiteUrl,
-        country: countryOfIncorporation, // Assuming n8n expects 'country'
-        job_id: jobId
-      }),
+      body: JSON.stringify(payload),
       signal: controller.signal
     });
 
@@ -55,9 +62,21 @@ export async function POST(req: Request) {
     }
 
     if (!n8nResponse.ok) {
+      console.error(`[API /initiate-analysis] n8n workflow failed. Status: ${n8nResponse.status}, Response: ${responseText}`);
+      
+      // Add more specific error handling for common n8n issues
+      let errorMessage = 'Failed to trigger n8n workflow';
+      let troubleshooting = '';
+      
+      if (responseText.includes('There was a problem executing the workflow')) {
+        errorMessage = 'n8n workflow execution failed';
+        troubleshooting = 'This usually indicates: 1) Workflow is not properly configured, 2) Required nodes are missing, 3) Webhook node has errors, 4) Database connection issues, or 5) Workflow is not activated';
+      }
+      
       return NextResponse.json({ 
-        error: 'Failed to trigger n8n workflow', 
+        error: errorMessage,
         details: responseText,
+        troubleshooting,
         status: n8nResponse.status 
       }, { status: n8nResponse.status });
     }

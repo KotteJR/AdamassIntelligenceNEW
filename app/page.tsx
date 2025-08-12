@@ -49,11 +49,15 @@ function HomeContent() {
 
     const loadAllReports = async () => {
       try {
-        // Load all reports for featured section
+        // Load featured analyses from local Storage folder
         const res = await fetch("/api/reports");
         if (!res.ok) return;
         const data = await res.json();
-        const mapped: StoredReportIndexItem[] = (data || []).map((r: { jobId: string; companyAlias: string; dateGenerated: string }) => ({ jobId: r.jobId, companyAlias: r.companyAlias, dateGenerated: r.dateGenerated }));
+        const mapped: StoredReportIndexItem[] = (data || []).map((r: { jobId: string; companyAlias: string; dateGenerated: string }) => ({ 
+          jobId: r.jobId, 
+          companyAlias: r.companyAlias, 
+          dateGenerated: r.dateGenerated 
+        }));
         mapped.sort((a, b) => new Date(b.dateGenerated).getTime() - new Date(a.dateGenerated).getTime());
         setAllReports(mapped);
       } catch {}
