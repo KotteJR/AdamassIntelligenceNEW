@@ -7,9 +7,10 @@ const STORAGE_DIR = path.join(process.cwd(), 'Storage');
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { jobId: string } }
+  { params }: { params: Promise<{ jobId: string }> }
 ) {
-  const jobId = params.jobId;
+  const resolvedParams = await params;
+  const jobId = resolvedParams.jobId;
   
   if (!jobId) {
     return NextResponse.json({ error: 'Missing jobId' }, { status: 400 });
