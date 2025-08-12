@@ -255,6 +255,8 @@ function ReportConsoleContent() {
   // Collapsible sidebars state (desktop)
   const [isLeftCollapsed, setIsLeftCollapsed] = useState<boolean>(false);
   const [isRightCollapsed, setIsRightCollapsed] = useState<boolean>(false);
+  // Mobile: which pane is visible
+  const [mobileView, setMobileView] = useState<'report' | 'chat' | 'studio'>('report');
   // Optional: restore persisted state
   useEffect(() => {
     try {
@@ -875,88 +877,93 @@ function ReportConsoleContent() {
 
       {/* Mobile & Desktop Layout */}
       <div className="grow overflow-hidden">
-        {/* Mobile: Stacked layout */}
-        <div className="flex h-full flex-col gap-4 p-4 lg:hidden">
-          {/* Mobile Chat Section */}
-          <div className={`rounded-2xl p-3 ${isDark ? 'theme-card theme-border border' : 'bg-slate-50'}`}>
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className={`text-xs font-semibold uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-500'}`}>Chat</h3>
-              <div className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-400'}`}>AI Assistant</div>
-            </div>
-            <div className="h-32 overflow-hidden">
-              <ChatPanel reportData={report} />
+        {/* Mobile: Tabbed layout with full-screen panes */}
+        <div className="flex h-full flex-col gap-3 p-3 lg:hidden">
+          {/* Mobile top tabs */}
+          <div className={`rounded-xl border ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
+            <div className="grid grid-cols-3">
+              {([
+                { id: 'chat', label: 'Chat' },
+                { id: 'report', label: 'Report' },
+                { id: 'studio', label: 'Studio' },
+              ] as const).map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => setMobileView(t.id)}
+                  className={`py-2 text-sm font-medium border-b-2 transition-colors ${
+                    mobileView === t.id
+                      ? (isDark ? 'border-[color:var(--accent)] accent' : 'border-slate-900 text-slate-900')
+                      : `border-transparent ${isDark ? 'theme-text-muted hover:theme-text-secondary' : 'text-slate-500 hover:text-slate-700'}`
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Mobile Studio Section */}
-          <div className={`rounded-2xl p-3 ${isDark ? 'theme-card theme-border border' : 'bg-slate-50'}`}>
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className={`text-xs font-semibold uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-500'}`}>Studio</h3>
-              <div className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-400'}`}>Actions</div>
-            </div>
-            <div className="space-y-3">
-              {/* Mobile: Horizontal scrollable cards */}
-              <div className="flex gap-3 overflow-x-auto pb-2">
-                <div className="flex shrink-0 gap-3">
-                  {/* Audio Overview removed on mobile */}
-                  <div className="w-36 h-40 shrink-0">
-                    <StudioCard
-                      title="Mind Map"
-                      subtitle="Visual relationships"
-                      imageSrc="/features/mindmap.png"
-                      onClick={() => handleStudioAction("Mind Map")}
-                      disabled={isProcessing("Mind Map")}
-                      isGenerated={!!generatedContent.mindmap}
-                      buttonText="Generate"
-                      isLoading={isProcessing("Mind Map")}
-                    />
-                  </div>
-                  <div className="w-36 h-40 shrink-0">
-                    <StudioCard
-                      title="Podcast"
-                      subtitle="AI discussion"
-                      imageSrc="/features/podcast.png"
-                      onClick={() => handleStudioAction("Generate Podcast")}
-                      disabled={isProcessing("Generate Podcast")}
-                      isGenerated={!!generatedContent.podcast}
-                      buttonText="Generate"
-                      isLoading={isProcessing("Generate Podcast")}
-                    />
-                  </div>
-                  <div className="w-36 h-40 shrink-0">
-                    <StudioCard
-                      title="Audio Report"
-                      subtitle="Full narration"
-                      imageSrc="/features/audioreport.png"
-                      onClick={() => handleStudioAction("Audio Report")}
-                      disabled={isProcessing("Audio Report")}
-                      isGenerated={!!generatedContent.audioReport}
-                      buttonText="Generate"
-                      isLoading={isProcessing("Audio Report")}
-                    />
-                  </div>
-                  <div className="w-36 h-40 shrink-0">
-                    <StudioCard
-                      title="Export PDF"
-                      subtitle="Download report"
-                      imageSrc="/features/pdf.svg"
-                      onClick={() => handleStudioAction("Export PDF")}
-                      disabled={true}
-                      isGenerated={false}
-                      buttonText="Coming Soon"
-                      isLoading={false}
-                    />
-                  </div>
+          {/* Pane content */}
+          <div className="min-h-0 flex-1 overflow-hidden">
+            {mobileView === 'chat' && (
+              <div className={`h-full rounded-2xl border ${isDark ? 'theme-card theme-border' : 'bg-slate-50 border-slate-200'}`}>
+                <div className="h-full">
+                  <ChatPanel showHeader reportData={report} />
                 </div>
               </div>
-            </div>
+            )}
 
+            {mobileView === 'report' && (
+              <div className={`h-full rounded-2xl border ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
+                <TabContent />
+              </div>
+            )}
 
-          </div>
-
-          {/* Mobile Tabbed Content Section */}
-          <div className={`min-h-0 flex-1 overflow-hidden rounded-2xl shadow-sm border ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
-            <TabContent />
+            {mobileView === 'studio' && (
+              <div className={`h-full rounded-2xl border p-3 ${isDark ? 'theme-card theme-border' : 'bg-slate-50 border-slate-200'}`}>
+                <div className="grid grid-cols-2 gap-3">
+                  <StudioCard
+                    title="Mind Map"
+                    subtitle="Visual relationships"
+                    imageSrc="/features/mindmap.png"
+                    onClick={() => handleStudioAction('Mind Map')}
+                    disabled={isProcessing('Mind Map')}
+                    isGenerated={!!generatedContent.mindmap}
+                    buttonText="Generate"
+                    isLoading={isProcessing('Mind Map')}
+                  />
+                  <StudioCard
+                    title="Podcast"
+                    subtitle="AI discussion"
+                    imageSrc="/features/podcast.png"
+                    onClick={() => handleStudioAction('Generate Podcast')}
+                    disabled={isProcessing('Generate Podcast')}
+                    isGenerated={!!generatedContent.podcast}
+                    buttonText="Generate"
+                    isLoading={isProcessing('Generate Podcast')}
+                  />
+                  <StudioCard
+                    title="Audio Report"
+                    subtitle="Full narration"
+                    imageSrc="/features/audioreport.png"
+                    onClick={() => handleStudioAction('Audio Report')}
+                    disabled={isProcessing('Audio Report')}
+                    isGenerated={!!generatedContent.audioReport}
+                    buttonText="Generate"
+                    isLoading={isProcessing('Audio Report')}
+                  />
+                  <StudioCard
+                    title="Export PDF"
+                    subtitle="Download report"
+                    imageSrc="/features/pdf.svg"
+                    onClick={() => handleStudioAction('Export PDF')}
+                    disabled={true}
+                    isGenerated={false}
+                    buttonText="Coming Soon"
+                    isLoading={false}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
