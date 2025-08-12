@@ -881,24 +881,26 @@ function ReportConsoleContent() {
         <div className="flex h-full flex-col gap-3 p-3 lg:hidden">
           {/* Mobile top tabs */}
           <div className={`rounded-xl border ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
-            <div className="grid grid-cols-3">
-              {([
-                { id: 'chat', label: 'Chat' },
-                { id: 'report', label: 'Report' },
-                { id: 'studio', label: 'Studio' },
-              ] as const).map(t => (
-                <button
-                  key={t.id}
-                  onClick={() => setMobileView(t.id)}
-                  className={`py-2 text-sm font-medium border-b-2 transition-colors ${
-                    mobileView === t.id
-                      ? (isDark ? 'border-[color:var(--accent)] accent' : 'border-slate-900 text-slate-900')
-                      : `border-transparent ${isDark ? 'theme-text-muted hover:theme-text-secondary' : 'text-slate-500 hover:text-slate-700'}`
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
+            <div className="p-2">
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { id: 'chat', label: 'Chat' },
+                  { id: 'report', label: 'Report' },
+                  { id: 'studio', label: 'Studio' },
+                ] as const).map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => setMobileView(t.id)}
+                    className={`py-2 text-sm font-medium rounded-lg transition-colors ${
+                      mobileView === t.id
+                        ? (isDark ? 'theme-muted' : 'bg-slate-100 text-slate-900')
+                        : (isDark ? 'theme-card theme-text-muted hover:theme-muted' : 'bg-white text-slate-600 hover:bg-slate-50')
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
