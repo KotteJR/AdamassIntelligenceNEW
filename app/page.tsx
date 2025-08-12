@@ -253,7 +253,16 @@ function HomeContent() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {/* Create new tile (requires auth) */}
             <button onClick={() => (user ? setIsModalOpen(true) : setIsAuthModalOpen(true))} className={`flex h-32 flex-col items-center justify-center rounded-xl border border-dashed ${isDark ? 'theme-border theme-card theme-text-secondary' : 'border-slate-300 bg-white text-slate-600'} shadow-sm transition hover:opacity-80`}>
-              <span className={`mb-2 inline-flex h-8 w-8 items-center justify-center rounded-full text-lg ${isDark ? 'bg-slate-700 text-white' : 'bg-slate-100'}`}>+</span>
+              <span
+                className={`mb-2 inline-flex h-9 w-9 items-center justify-center rounded-full border text-lg font-semibold ${
+                  isDark
+                    ? 'theme-muted theme-border accent'
+                    : 'bg-slate-50 border-slate-300 text-[color:var(--accent)]'
+                }`}
+                aria-hidden="true"
+              >
+                +
+              </span>
               <span className="text-sm">Create new analysis</span>
             </button>
 

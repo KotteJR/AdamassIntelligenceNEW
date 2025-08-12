@@ -111,7 +111,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess })
               </h2>
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-full flex items-center justify-center theme-text-muted hover:theme-text-secondary hover:theme-muted transition-colors"
+                className="w-8 h-8 rounded-full flex items-center justify-center theme-text-muted hover:theme-muted transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

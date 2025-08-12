@@ -252,6 +252,27 @@ function ReportConsoleContent() {
   const { report } = useReport();
   const { isDark } = useTheme();
   
+  // Collapsible sidebars state (desktop)
+  const [isLeftCollapsed, setIsLeftCollapsed] = useState<boolean>(false);
+  const [isRightCollapsed, setIsRightCollapsed] = useState<boolean>(false);
+  // Optional: restore persisted state
+  useEffect(() => {
+    try {
+      const left = typeof window !== 'undefined' ? localStorage.getItem('console_left_collapsed') : null;
+      const right = typeof window !== 'undefined' ? localStorage.getItem('console_right_collapsed') : null;
+      if (left != null) setIsLeftCollapsed(left === '1');
+      if (right != null) setIsRightCollapsed(right === '1');
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('console_left_collapsed', isLeftCollapsed ? '1' : '0');
+        localStorage.setItem('console_right_collapsed', isRightCollapsed ? '1' : '0');
+      }
+    } catch {}
+  }, [isLeftCollapsed, isRightCollapsed]);
+
   const [processingActions, setProcessingActions] = useState<Set<string>>(new Set());
   const startProcessing = (action: string) => setProcessingActions(prev => {
     const next = new Set(prev); next.add(action); return next;
@@ -939,16 +960,57 @@ function ReportConsoleContent() {
           </div>
         </div>
 
-        {/* Desktop: Grid layout */}
-        <div className="hidden h-full grid-cols-[minmax(300px,1fr)_minmax(0,1.8fr)_minmax(300px,1fr)] xl:grid-cols-[minmax(320px,1fr)_minmax(0,2fr)_minmax(320px,1fr)] 2xl:grid-cols-[minmax(340px,1fr)_minmax(0,2.2fr)_minmax(340px,1fr)] gap-4 overflow-hidden px-4 py-4 lg:grid">
+        {/* Desktop: Grid layout with collapsible sidebars */}
+        <div
+          className="hidden h-full grid gap-4 overflow-hidden px-4 py-4 lg:grid"
+          style={{
+            gridTemplateColumns: `${isLeftCollapsed ? '44px' : '380px'} minmax(0,1fr) ${isRightCollapsed ? '44px' : '380px'}`,
+            transition: 'grid-template-columns 300ms ease',
+          }}
+        >
           {/* Desktop Left: Chat */}
-          <aside className={`h-[calc(100vh-56px-32px)] overflow-hidden rounded-2xl p-2 border ${isDark ? 'theme-card theme-border' : 'bg-slate-50 border-slate-200'}`}>
-            <div className="px-2 pb-2 pt-3">
-              <h3 className={`text-sm font-semibold uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Chat</h3>
-            </div>
-            <div className="h-[calc(100%-44px)] overflow-hidden">
-              <ChatPanel reportData={report} />
-            </div>
+          <aside className={`relative h-[calc(100vh-56px-32px)] overflow-hidden rounded-2xl border ${
+            isDark
+              ? `theme-border ${isLeftCollapsed ? 'theme-card hover:theme-muted' : 'theme-card'}`
+              : (isLeftCollapsed ? 'bg-white border-slate-200 hover:bg-slate-50' : 'bg-slate-50 border-slate-200')
+          }`}>
+            {!isLeftCollapsed ? (
+              <div className="h-full flex flex-col p-2 transition-all duration-300">
+                <div className="px-2 pb-2 pt-1 flex items-center justify-between">
+                  <h3 className={`text-sm font-semibold uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Chat</h3>
+                  <button
+                    aria-label="Collapse chat"
+                    onClick={() => setIsLeftCollapsed(true)}
+                    className={`h-7 w-7 inline-flex items-center justify-center rounded-md transition-colors ${
+                      isDark
+                        ? 'theme-text-muted hover:theme-muted hover:ring-1 hover:ring-[color:var(--border-primary)]'
+                        : 'text-slate-500 hover:bg-slate-200'
+                    }`}
+                  >
+                    <svg className={"w-4 h-4"} viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="h-[calc(100%-44px)] overflow-hidden">
+                  <ChatPanel reportData={report} />
+                </div>
+              </div>
+            ) : (
+              <button
+                aria-label="Open Chat"
+                onClick={() => setIsLeftCollapsed(false)}
+                className={`h-full w-full flex items-center justify-center transition-colors bg-transparent`}
+                title="Open Chat"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`w-5 h-5 ${isDark ? 'theme-text' : 'text-slate-700'}`}>
+                  <path d="M4 4h16a2 2 0 012 2v8a2 2 0 01-2 2H10l-4 3v-3H4a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                  <circle cx="9" cy="10" r="1.25" />
+                  <circle cx="13" cy="10" r="1.25" />
+                  <circle cx="17" cy="10" r="1.25" />
+                </svg>
+              </button>
+            )}
           </aside>
 
           {/* Desktop Middle: Tabbed Content */}
@@ -957,55 +1019,88 @@ function ReportConsoleContent() {
           </section>
 
           {/* Desktop Right: Studio Actions */}
-          <aside className={`h-[calc(100vh-56px-32px)] overflow-hidden rounded-2xl p-3 border ${isDark ? 'theme-card theme-border' : 'bg-slate-50 border-slate-200'}`}>
-            <div className="px-1 pb-2 pt-2">
-              <h3 className={`text-sm font-semibold uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Studio</h3>
-            </div>
-            <div className="h-[calc(100%-40px)] overflow-y-auto p-1">
-              {/* Proper 2x2 grid layout */}
-              <div className="grid grid-cols-2 gap-4 auto-rows-[1fr]">
-                <StudioCard
-                  title="Mind Map"
-                  subtitle="Visualize relationships between entities and themes."
-                  imageSrc="/features/mindmap.png"
-                  onClick={() => handleStudioAction("Mind Map")}
-                  disabled={isProcessing("Mind Map")}
-                  isGenerated={!!generatedContent.mindmap}
-                  buttonText="Generate"
-                  isLoading={isProcessing("Mind Map")}
-                />
-                <StudioCard
-                  title="Generate Podcast"
-                  subtitle="Two-voice discussion based on the analysis."
-                  imageSrc="/features/podcast.png"
-                  onClick={() => handleStudioAction("Generate Podcast")}
-                  disabled={isProcessing("Generate Podcast")}
-                  isGenerated={!!generatedContent.podcast}
-                  buttonText="Generate"
-                  isLoading={isProcessing("Generate Podcast")}
-                />
-                <StudioCard
-                  title="Generate Audio Report"
-                  subtitle="Narrated full report for listening on the go."
-                  imageSrc="/features/audioreport.png"
-                  onClick={() => handleStudioAction("Audio Report")}
-                  disabled={isProcessing("Audio Report")}
-                  isGenerated={!!generatedContent.audioReport}
-                  buttonText="Generate"
-                  isLoading={isProcessing("Audio Report")}
-                />
-                <StudioCard
-                  title="Export PDF"
-                  subtitle="Export a beautifully formatted PDF."
-                  imageSrc="/features/pdf.svg"
-                  onClick={() => handleStudioAction("Export PDF")}
-                  disabled={true}
-                  isGenerated={false}
-                  buttonText="Coming Soon"
-                  isLoading={false}
-                />
+          <aside className={`relative h-[calc(100vh-56px-32px)] overflow-hidden rounded-2xl border ${
+            isDark
+              ? `theme-border ${isRightCollapsed ? 'theme-card hover:theme-muted' : 'theme-card'}`
+              : (isRightCollapsed ? 'bg-white border-slate-200 hover:bg-slate-50' : 'bg-slate-50 border-slate-200')
+          }`}>
+            {!isRightCollapsed ? (
+              <div className="h-full flex flex-col p-3 transition-all duration-300">
+                <div className="px-1 pb-2 pt-1 flex items-center justify-between">
+                  <h3 className={`text-sm font-semibold uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Studio</h3>
+                  <button
+                    aria-label="Collapse studio"
+                    onClick={() => setIsRightCollapsed(true)}
+                    className={`h-7 w-7 inline-flex items-center justify-center rounded-md transition-colors ${
+                      isDark
+                        ? 'theme-text-muted hover:theme-muted hover:ring-1 hover:ring-[color:var(--border-primary)]'
+                        : 'text-slate-500 hover:bg-slate-200'
+                    }`}
+                  >
+                    <svg className={"w-4 h-4"} viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="h-[calc(100%-40px)] overflow-y-auto p-1">
+                  {/* Proper 2x2 grid layout */}
+                  <div className="grid grid-cols-2 gap-4 auto-rows-[1fr]">
+                    <StudioCard
+                      title="Mind Map"
+                      subtitle="Visualize relationships between entities and themes."
+                      imageSrc="/features/mindmap.png"
+                      onClick={() => handleStudioAction("Mind Map")}
+                      disabled={isProcessing("Mind Map")}
+                      isGenerated={!!generatedContent.mindmap}
+                      buttonText="Generate"
+                      isLoading={isProcessing("Mind Map")}
+                    />
+                    <StudioCard
+                      title="Generate Podcast"
+                      subtitle="Two-voice discussion based on the analysis."
+                      imageSrc="/features/podcast.png"
+                      onClick={() => handleStudioAction("Generate Podcast")}
+                      disabled={isProcessing("Generate Podcast")}
+                      isGenerated={!!generatedContent.podcast}
+                      buttonText="Generate"
+                      isLoading={isProcessing("Generate Podcast")}
+                    />
+                    <StudioCard
+                      title="Generate Audio Report"
+                      subtitle="Narrated full report for listening on the go."
+                      imageSrc="/features/audioreport.png"
+                      onClick={() => handleStudioAction("Audio Report")}
+                      disabled={isProcessing("Audio Report")}
+                      isGenerated={!!generatedContent.audioReport}
+                      buttonText="Generate"
+                      isLoading={isProcessing("Audio Report")}
+                    />
+                    <StudioCard
+                      title="Export PDF"
+                      subtitle="Export a beautifully formatted PDF."
+                      imageSrc="/features/pdf.svg"
+                      onClick={() => handleStudioAction("Export PDF")}
+                      disabled={true}
+                      isGenerated={false}
+                      buttonText="Coming Soon"
+                      isLoading={false}
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <button
+                aria-label="Open Studio"
+                onClick={() => setIsRightCollapsed(false)}
+                className={`h-full w-full flex items-center justify-center transition-colors bg-transparent`}
+                title="Open Studio"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`w-5 h-5 ${isDark ? 'theme-text' : 'text-slate-700'}`}>
+                  <path d="M9 17l-1.5-3.5L4 12l3.5-1.5L9 7l1.5 3.5L14 12l-3.5 1.5L9 17z" />
+                  <path d="M17 4l.8 1.8L20 7l-2.2 1.2L17 10l-.8-1.8L14 7l2.2-1.2L17 4z" />
+                </svg>
+              </button>
+            )}
           </aside>
         </div>
       </div>
