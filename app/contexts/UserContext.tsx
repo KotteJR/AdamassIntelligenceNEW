@@ -32,7 +32,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (error) {
           console.warn('[Auth] Session check error:', error);
           // Clear invalid session if refresh token is bad
-          if (error.message?.includes('refresh') || error.message?.includes('token') || error.message?.includes('Invalid Refresh Token')) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          if (errorMessage?.includes('refresh') || errorMessage?.includes('token') || errorMessage?.includes('Invalid Refresh Token')) {
             console.log('[Auth] Clearing invalid session due to token error');
             try {
               await supabase.auth.signOut();
@@ -86,7 +87,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error) {
         console.error('[Auth] Session check error:', error);
         // Handle AuthApiError specifically
-        if (error.message?.includes('Invalid Refresh Token') || error.message?.includes('Refresh Token Not Found')) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage?.includes('Invalid Refresh Token') || errorMessage?.includes('Refresh Token Not Found')) {
           console.log('[Auth] Clearing invalid refresh token');
           try {
             await supabase.auth.signOut();
@@ -151,7 +153,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch (error) {
           console.error('[Auth] Error in auth state change:', error);
           // Handle refresh token errors in auth state changes
-          if (error.message?.includes('Invalid Refresh Token') || error.message?.includes('Refresh Token Not Found')) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          if (errorMessage?.includes('Invalid Refresh Token') || errorMessage?.includes('Refresh Token Not Found')) {
             console.log('[Auth] Clearing invalid refresh token in auth state change');
             try {
               await supabase.auth.signOut();
