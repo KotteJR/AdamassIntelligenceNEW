@@ -40,6 +40,7 @@ export async function GET(req: Request) {
       const foundSource = data.find(row => row.source === source);
       if (foundSource) {
         sourceStatuses[source] = foundSource.status || 'unknown'; // Assuming 'done' or similar means complete
+        console.log(`[API /check-job-status] Source ${source}: status = "${foundSource.status}"`);
         if (foundSource.status !== 'done' && foundSource.status !== 'completed') { // Adjust based on actual status values
           allSourcesCompleted = false;
         }
@@ -47,6 +48,7 @@ export async function GET(req: Request) {
         sourceStatuses[source] = 'pending';
         allSourcesPresent = false;
         allSourcesCompleted = false;
+        console.log(`[API /check-job-status] Source ${source}: not found in database`);
       }
     }
     

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState, Suspense } from "react";
+import React, { useEffect, useMemo, useRef, useState, Suspense, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import AddSourcesModal from "./components/AddSourcesModal";
@@ -45,6 +45,35 @@ function HomeContent() {
   const [userReports, setUserReports] = useState<StoredReportIndexItem[]>([]);
   const [myIds, setMyIds] = useState<string[]>([]);
 
+  const loadUserReports = useCallback(async () => {
+    if (!user) {
+      setUserReports([]);
+      return;
+    }
+
+    try {
+      // Load user-specific reports from Supabase
+      const { data, error } = await supabase
+        .from('user_analyses')
+        .select('job_id, company_alias, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const mapped: StoredReportIndexItem[] = (data || []).map(r => ({
+        jobId: r.job_id,
+        companyAlias: r.company_alias || 'Unknown Company',
+        dateGenerated: r.created_at
+      }));
+
+      console.log(`[Dashboard] Loaded ${mapped.length} user reports for user: ${user.id}`);
+      setUserReports(mapped);
+    } catch (error) {
+      console.error('Error loading user reports:', error);
+    }
+  }, [user]);
+
   useEffect(() => {
 
     const loadAllReports = async () => {
@@ -63,37 +92,9 @@ function HomeContent() {
       } catch {}
     };
 
-    const loadUserReports = async () => {
-      if (!user) {
-        setUserReports([]);
-        return;
-      }
-
-      try {
-        // Load user-specific reports from Supabase
-        const { data, error } = await supabase
-          .from('user_analyses')
-          .select('job_id, company_alias, created_at')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        const mapped: StoredReportIndexItem[] = (data || []).map(r => ({
-          jobId: r.job_id,
-          companyAlias: r.company_alias || 'Unknown Company',
-          dateGenerated: r.created_at
-        }));
-
-        setUserReports(mapped);
-      } catch (error) {
-        console.error('Error loading user reports:', error);
-      }
-    };
-
     loadAllReports();
     loadUserReports();
-  }, [user]);
+  }, [user, loadUserReports]);
 
   useEffect(() => {
     try {
@@ -325,7 +326,12 @@ function HomeContent() {
       <AddSourcesModal
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onComplete={(jid) => openAnalysis(jid)}
+        onComplete={(jid) => {
+          // Refresh user reports to show the new analysis
+          loadUserReports();
+          // Then open the analysis
+          openAnalysis(jid);
+        }}
       />
 
       <AuthModal

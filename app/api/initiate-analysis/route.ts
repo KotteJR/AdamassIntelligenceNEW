@@ -1,6 +1,30 @@
 import { NextResponse } from 'next/server';
 
-const N8N_WEBHOOK_URL_STRING = process.env.N8N_WEBHOOK_URL;
+const N8N_WEBHOOK_URL_STRING = process.env.N8N_WEBHOOK_URL?.trim();
+
+// Custom fetch function to handle SSL issues in development
+async function fetchWithSSLHandling(url: string, options: RequestInit) {
+  try {
+    // First try normal fetch
+    return await fetch(url, options);
+  } catch (error: any) {
+    // If SSL error and in development, try alternative approaches
+    if (error.code === 'DEPTH_ZERO_SELF_SIGNED_CERT' || 
+        error.message?.includes('self-signed certificate')) {
+      
+      console.log('[SSL] Detected self-signed certificate, checking environment...');
+      
+      // In development, we can be more lenient
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[SSL] Development mode: providing detailed error for SSL issue');
+        throw new Error(`SSL_CERT_ERROR: ${error.message}`);
+      }
+    }
+    
+    // Re-throw the original error
+    throw error;
+  }
+}
 
 export async function POST(req: Request) {
   let n8nUrl;
@@ -19,6 +43,15 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { companyAlias, legalAlias, websiteUrl, countryOfIncorporation, jobId } = body;
 
+    // Debug the extracted values
+    console.log(`[API /initiate-analysis] Raw request body:`, body);
+    console.log(`[API /initiate-analysis] Extracted values:`);
+    console.log(`[API /initiate-analysis] - jobId: "${jobId}" (type: ${typeof jobId})`);
+    console.log(`[API /initiate-analysis] - websiteUrl: "${websiteUrl}" (type: ${typeof websiteUrl})`);
+    console.log(`[API /initiate-analysis] - companyAlias: "${companyAlias}" (type: ${typeof companyAlias})`);
+    console.log(`[API /initiate-analysis] - legalAlias: "${legalAlias}" (type: ${typeof legalAlias})`);
+    console.log(`[API /initiate-analysis] - countryOfIncorporation: "${countryOfIncorporation}" (type: ${typeof countryOfIncorporation})`);
+
     if (!companyAlias || !websiteUrl || !jobId) {
       return NextResponse.json({ error: 'Missing required fields: companyAlias, websiteUrl, and jobId are required.' }, { status: 400 });
     }
@@ -27,15 +60,14 @@ export async function POST(req: Request) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout for n8n
 
-    // Match the exact structure expected by the n8n workflow (nested under "body")
+    // n8n is putting our data in body automatically, so let's send it flat
+    // but the expressions need to reference it correctly
     const payload = {
-      body: {
-        job_id: jobId,
-        url: websiteUrl,
-        company_name: companyAlias,
-        legal_name: legalAlias || companyAlias,
-        country: countryOfIncorporation || 'Unknown'
-      }
+      job_id: jobId,
+      url: websiteUrl,
+      company_name: companyAlias,
+      legal_name: legalAlias || companyAlias,
+      country: countryOfIncorporation || 'Unknown'
     };
 
     console.log(`[API /initiate-analysis] Triggering n8n workflow for job_id: ${jobId} at URL: ${n8nUrl.toString()}`);
@@ -43,9 +75,13 @@ export async function POST(req: Request) {
     
     let n8nResponse;
     try {
-      n8nResponse = await fetch(n8nUrl.toString(), {
+      console.log(`[API /initiate-analysis] Sending request to n8n...`);
+      n8nResponse = await fetchWithSSLHandling(n8nUrl.toString(), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify(payload),
         signal: controller.signal
       });
@@ -54,15 +90,33 @@ export async function POST(req: Request) {
       
       // Handle SSL certificate errors
       if (fetchError.code === 'DEPTH_ZERO_SELF_SIGNED_CERT' || 
-          fetchError.message.includes('self-signed certificate') ||
-          fetchError.message.includes('certificate')) {
+          fetchError.message?.includes('self-signed certificate') ||
+          fetchError.message?.includes('certificate') ||
+          fetchError.message?.includes('SSL_CERT_ERROR')) {
         
         console.log('[API /initiate-analysis] SSL certificate issue detected...');
+        console.log('[API /initiate-analysis] n8n URL:', n8nUrl.toString());
+        console.log('[API /initiate-analysis] Node.js version:', process.version);
+        console.log('[API /initiate-analysis] Environment:', process.env.NODE_ENV);
         
         return NextResponse.json({ 
           error: 'SSL Certificate Error', 
-          details: 'The n8n webhook URL has an SSL certificate issue. Please check the certificate or use HTTPS with a valid certificate.',
-          troubleshooting: '1. Ensure n8n webhook URL uses HTTPS with valid certificate 2. Check if n8n server has proper SSL configuration 3. If using self-signed cert, configure SSL properly 4. Consider using HTTP instead of HTTPS for local development',
+          details: `The n8n webhook URL (${n8nUrl.toString()}) has an SSL certificate issue.`,
+          troubleshooting: [
+            '1. The n8n server at n8n.profit-ai.com has an invalid/self-signed SSL certificate',
+            '2. Node.js v24.3.0 has stricter SSL validation than previous versions',
+            '3. Fix options:',
+            '   a) Install valid SSL certificate on n8n server',
+            '   b) Use HTTP instead of HTTPS for development (if server supports it)',
+            '   c) Add NODE_TLS_REJECT_UNAUTHORIZED=0 to .env.local (DEVELOPMENT ONLY)',
+            '4. Check if webhook URL is complete (remove trailing % characters)'
+          ],
+          diagnostics: {
+            nodeVersion: process.version,
+            environment: process.env.NODE_ENV,
+            webhookUrl: n8nUrl.toString(),
+            urlHasTrailingPercent: N8N_WEBHOOK_URL_STRING?.endsWith('%')
+          },
           originalError: fetchError.message,
           status: 500 
         }, { status: 500 });
@@ -75,7 +129,12 @@ export async function POST(req: Request) {
     clearTimeout(timeoutId); 
 
     const responseText = await n8nResponse.text();
-    console.log(`[API /initiate-analysis] n8n response status: ${n8nResponse.status}, body: ${responseText}`);
+    console.log(`[API /initiate-analysis] n8n response status: ${n8nResponse.status}`);
+    console.log(`[API /initiate-analysis] n8n response body: ${responseText}`);
+    
+    // Debug the exact payload vs response
+    console.log(`[API /initiate-analysis] DEBUGGING - Payload sent:`, JSON.stringify(payload, null, 2));
+    console.log(`[API /initiate-analysis] DEBUGGING - Response received: ${responseText}`);
 
     if (n8nResponse.status === 504 || controller.signal.aborted) {
       return NextResponse.json({ 
