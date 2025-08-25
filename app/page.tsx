@@ -273,7 +273,7 @@ function HomeContent() {
               <span className="text-sm">Create new analysis</span>
             </button>
 
-            {(user ? userReports : myReports).map((r) => {
+            {(user ? userReports : []).map((r, idx) => {
               const background = generateCardBackground(r.companyAlias, r.jobId);
               const textColor = getTextColor(background);
               const badgeStyle = getBadgeStyle(background);
@@ -283,14 +283,22 @@ function HomeContent() {
                 <button 
                   key={r.jobId} 
                   onClick={() => openAnalysis(r.jobId)} 
-                  className={`group h-32 rounded-xl p-3 text-left relative overflow-hidden`}
-                  style={getBackgroundStyle(background)}
+                  className={`group h-32 rounded-xl p-3 text-left relative overflow-hidden animated-card ${background.gradient}`}
+                  style={{
+                    ...getBackgroundStyle(background),
+                    // randomize hues/duration per card via CSS vars
+                    ['--a1' as any]: `rgba(${(idx*53)%255}, ${(idx*97)%255}, ${(idx*29)%255}, 0.30)`,
+                    ['--a2' as any]: `rgba(${(idx*79+120)%255}, ${(idx*41+80)%255}, ${(idx*23+160)%255}, 0.55)`,
+                    ['--a3' as any]: `rgba(${(idx*33+200)%255}, ${(idx*61+60)%255}, ${(idx*17+120)%255}, 0.40)`,
+                    ['--dur' as any]: `${8 - (idx%3)*2}s`,
+                  } as React.CSSProperties}
                 >
-                  {/* Image layer */}
-                  <img src={img.imageUrl} alt={img.alt} loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = img.fallbackUrl; }} className="absolute inset-0 h-full w-full object-cover" />
-                  
-                   {/* Dark overlay for better text readability (lighter) */}
-                   <div className="absolute inset-0 bg-black/25" />
+                  {/* Complex animated layers - same as Featured Analyses */}
+                  <div className="bg-aurora" />
+                  <div className="bg-sheen" />
+                  <div className="bg-noise" />
+                  {/* Low-opacity tint for readability */}
+                  <div className="absolute inset-0 bg-black/30" />
                   
                   {/* Content */}
                   <div className="relative z-10 h-full flex flex-col justify-between">
@@ -316,9 +324,9 @@ function HomeContent() {
               );
             })}
 
-            {(user ? userReports : myReports).length === 0 && (
+            {(user ? userReports : []).length === 0 && (
               <div className={`col-span-full rounded-xl border p-4 text-sm ${isDark ? 'theme-border theme-card theme-text-secondary' : 'border-slate-200 bg-white text-slate-600'}`}>
-                {user ? 'No analyses yet. Create your first one!' : 'No recent analyses yet. Create one to see it here.'}
+                {user ? 'No analyses yet. Create your first one!' : 'Sign in to view your recent analyses'}
               </div>
             )}
           </div>

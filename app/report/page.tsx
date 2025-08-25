@@ -343,9 +343,10 @@ function ReportConsoleContent() {
           supabase.from('user_artifacts').select(selectColumns).eq('user_id', user.id).eq('job_id', currentJobId).eq('kind', 'audio_report').order('created_at', { ascending: false }).limit(1).maybeSingle(),
           supabase.from('user_artifacts').select(selectColumns).eq('user_id', user.id).eq('job_id', currentJobId).eq('kind', 'podcast').order('created_at', { ascending: false }).limit(1).maybeSingle(),
           supabase.from('user_artifacts').select(selectColumns).eq('user_id', user.id).eq('job_id', currentJobId).eq('kind', 'mindmap').order('created_at', { ascending: false }).limit(1).maybeSingle(),
+          supabase.from('user_artifacts').select(selectColumns).eq('user_id', user.id).eq('job_id', currentJobId).eq('kind', 'swot_analysis').order('created_at', { ascending: false }).limit(1).maybeSingle(),
         ];
 
-        const [overviewRes, reportRes, podcastRes, mindmapRes] = await Promise.all(queries);
+        const [overviewRes, reportRes, podcastRes, mindmapRes, swotRes] = await Promise.all(queries);
 
         const toObjectUrl = (base64: string, mime = 'audio/mpeg') => {
           const blob = new Blob([Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))], { type: mime });
@@ -362,6 +363,7 @@ function ReportConsoleContent() {
           } : {}),
           ...(podcastRes.data ? { podcast: { type: 'segments_autoplay', script: 'Saved podcast', segments: podcastRes.data.content?.segments || [] } as any } : {}),
           ...(mindmapRes.data ? { mindmap: mindmapRes.data.content } : {}),
+          ...(swotRes.data ? { swotAnalysis: swotRes.data.content } : {}),
         }));
       } catch (e) {
         console.error('Error loading artifacts:', e);
