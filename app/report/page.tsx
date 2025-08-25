@@ -10,6 +10,7 @@ import { ReportProvider, useReport } from "./ReportContext";
 import { useUser } from "../contexts/UserContext";
 import { supabase } from "../../lib/supabaseClient";
 import MindMapVisualization from "../components/MindMapVisualization";
+import SwotAnalysisVisualization from "../components/SwotAnalysisVisualization";
 
 const ReportClient = dynamic(() => import("./ReportClient"), {
   ssr: false,
@@ -296,14 +297,15 @@ function ReportConsoleContent() {
       successfulSegments?: number;
     };
     mindmap?: any;
+    swotAnalysis?: any;
   }>({});
-  const [activeTab, setActiveTab] = useState<'report' | 'audioReport' | 'podcast' | 'mindmap'>('report');
+  const [activeTab, setActiveTab] = useState<'report' | 'audioReport' | 'podcast' | 'mindmap' | 'swotAnalysis'>('report');
   const { user } = useUser();
 
   const getCurrentJobId = () => (report as any)?.jobId || (typeof window !== 'undefined' ? localStorage.getItem('currentJobId') : null);
 
   const persistArtifact = async (
-    kind: 'audio_overview' | 'audio_report' | 'podcast' | 'mindmap',
+    kind: 'audio_overview' | 'audio_report' | 'podcast' | 'mindmap' | 'swot_analysis',
     options: { content?: any; meta?: any; audioBase64?: string }
   ) => {
     try {
@@ -483,6 +485,12 @@ function ReportConsoleContent() {
           return;
         }
         break;
+      case 'SWOT Analysis':
+        if (generatedContent.swotAnalysis) {
+          setActiveTab('swotAnalysis');
+          return;
+        }
+        break;
     }
 
     startProcessing(action);
@@ -501,6 +509,9 @@ function ReportConsoleContent() {
           break;
         case 'Mind Map':
           endpoint = '/api/studio/mindmap';
+          break;
+        case 'SWOT Analysis':
+          endpoint = '/api/studio/swot-analysis';
           break;
         case 'Export PDF':
           alert('PDF export coming soon');
@@ -622,6 +633,18 @@ function ReportConsoleContent() {
           persistArtifact('mindmap', { content: data.mindmap });
           setActiveTab('mindmap');
           // Keep object URL only for preview context; no auto download
+        } else if (data.swot) {
+          // SWOT Analysis: preview only (no auto download)
+          const swotBlob = new Blob([JSON.stringify(data.swot, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(swotBlob);
+          // Store for preview
+          setGeneratedContent(prev => ({
+            ...prev,
+            swotAnalysis: data.swot
+          }));
+          persistArtifact('swot_analysis', { content: data.swot });
+          setActiveTab('swotAnalysis');
+          // Keep object URL only for preview context; no auto download
         }
       } else {
         throw new Error(data.error || 'Generation failed');
@@ -659,7 +682,8 @@ function ReportConsoleContent() {
           { id: 'report', label: 'Report', available: true },
           { id: 'audioReport', label: 'Audio Report', available: !!generatedContent.audioReport },
           { id: 'podcast', label: 'Podcast', available: !!generatedContent.podcast },
-          { id: 'mindmap', label: 'Mind Map', available: !!generatedContent.mindmap }
+          { id: 'mindmap', label: 'Mind Map', available: !!generatedContent.mindmap },
+          { id: 'swotAnalysis', label: 'SWOT Analysis', available: !!generatedContent.swotAnalysis }
         ].filter(tab => tab.available);
 
     return (
@@ -846,6 +870,46 @@ function ReportConsoleContent() {
               </div>
             </div>
           )}
+
+          {activeTab === 'swotAnalysis' && generatedContent.swotAnalysis && (
+            <div className="h-full flex flex-col">
+              {/* Header with controls */}
+              <div className={`flex-shrink-0 border-b px-6 py-4 ${isDark ? 'theme-border theme-card' : 'border-slate-200 bg-white'}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className={`text-lg font-semibold ${isDark ? 'theme-text' : 'text-slate-900'}`}>SWOT Analysis</h2>
+                    <p className={`text-sm mt-1 ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>
+                      Strategic analysis with {generatedContent.swotAnalysis.strengths?.length || 0} strengths, {generatedContent.swotAnalysis.weaknesses?.length || 0} weaknesses, {generatedContent.swotAnalysis.opportunities?.length || 0} opportunities, and {generatedContent.swotAnalysis.threats?.length || 0} threats
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const swotBlob = new Blob([JSON.stringify(generatedContent.swotAnalysis, null, 2)], { type: 'application/json' });
+                      const url = URL.createObjectURL(swotBlob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${report?.companyAlias || 'company'}_swot_analysis.json`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                    }}
+                    className={`inline-flex items-center px-3 py-2 border rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 ${isDark ? 'theme-border theme-text-secondary theme-muted hover:theme-card focus:ring-[color:var(--accent)]' : 'border-slate-300 text-slate-700 bg-white hover:bg-slate-50 focus:ring-indigo-500'}`}
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Download JSON
+                  </button>
+                </div>
+              </div>
+              
+              {/* SWOT Analysis */}
+              <div className="flex-1 min-h-0">
+                <SwotAnalysisVisualization data={generatedContent.swotAnalysis} />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -922,47 +986,66 @@ function ReportConsoleContent() {
 
             {mobileView === 'studio' && (
               <div className={`h-full rounded-2xl border p-3 ${isDark ? 'theme-card theme-border' : 'bg-slate-50 border-slate-200'}`}>
-                <div className="grid grid-cols-2 gap-3">
-                  <StudioCard
-                    title="Mind Map"
-                    subtitle="Visual relationships"
-                    imageSrc="/features/mindmap.png"
-                    onClick={() => handleStudioAction('Mind Map')}
-                    disabled={isProcessing('Mind Map')}
-                    isGenerated={!!generatedContent.mindmap}
-                    buttonText="Generate"
-                    isLoading={isProcessing('Mind Map')}
-                  />
-                  <StudioCard
-                    title="Podcast"
-                    subtitle="AI discussion"
-                    imageSrc="/features/podcast.png"
-                    onClick={() => handleStudioAction('Generate Podcast')}
-                    disabled={isProcessing('Generate Podcast')}
-                    isGenerated={!!generatedContent.podcast}
-                    buttonText="Generate"
-                    isLoading={isProcessing('Generate Podcast')}
-                  />
-                  <StudioCard
-                    title="Audio Report"
-                    subtitle="Full narration"
-                    imageSrc="/features/audioreport.png"
-                    onClick={() => handleStudioAction('Audio Report')}
-                    disabled={isProcessing('Audio Report')}
-                    isGenerated={!!generatedContent.audioReport}
-                    buttonText="Generate"
-                    isLoading={isProcessing('Audio Report')}
-                  />
-                  <StudioCard
-                    title="Export PDF"
-                    subtitle="Download report"
-                    imageSrc="/features/pdf.svg"
-                    onClick={() => handleStudioAction('Export PDF')}
-                    disabled={true}
-                    isGenerated={false}
-                    buttonText="Coming Soon"
-                    isLoading={false}
-                  />
+                {/* Category: STRATEGIC */}
+                <div className="mb-6">
+                  <div className="flex items-center mb-3">
+                    <div className={`flex-1 h-px ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`}></div>
+                    <span className={`px-3 text-xs font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Strategic</span>
+                    <div className={`flex-1 h-px ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`}></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <StudioCard
+                      title="Mind Map"
+                      subtitle="Visual relationships"
+                      imageSrc="/features/mindmap.png"
+                      onClick={() => handleStudioAction('Mind Map')}
+                      disabled={isProcessing('Mind Map')}
+                      isGenerated={!!generatedContent.mindmap}
+                      buttonText="Generate"
+                      isLoading={isProcessing('Mind Map')}
+                    />
+                    <StudioCard
+                      title="SWOT Analysis"
+                      subtitle="Strategic framework"
+                      imageSrc="/features/swot.png"
+                      onClick={() => handleStudioAction('SWOT Analysis')}
+                      disabled={isProcessing('SWOT Analysis')}
+                      isGenerated={!!generatedContent.swotAnalysis}
+                      buttonText="Generate"
+                      isLoading={isProcessing('SWOT Analysis')}
+                    />
+                  </div>
+                </div>
+
+                {/* Category: AUDIO */}
+                <div>
+                  <div className="flex items-center mb-3">
+                    <div className={`flex-1 h-px ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`}></div>
+                    <span className={`px-3 text-xs font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Audio</span>
+                    <div className={`flex-1 h-px ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`}></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <StudioCard
+                      title="Podcast"
+                      subtitle="AI discussion"
+                      imageSrc="/features/podcast.png"
+                      onClick={() => handleStudioAction('Generate Podcast')}
+                      disabled={isProcessing('Generate Podcast')}
+                      isGenerated={!!generatedContent.podcast}
+                      buttonText="Generate"
+                      isLoading={isProcessing('Generate Podcast')}
+                    />
+                    <StudioCard
+                      title="Audio Report"
+                      subtitle="Full narration"
+                      imageSrc="/features/audioreport.png"
+                      onClick={() => handleStudioAction('Audio Report')}
+                      disabled={isProcessing('Audio Report')}
+                      isGenerated={!!generatedContent.audioReport}
+                      buttonText="Generate"
+                      isLoading={isProcessing('Audio Report')}
+                    />
+                  </div>
                 </div>
               </div>
             )}
@@ -1052,48 +1135,87 @@ function ReportConsoleContent() {
                   </button>
                 </div>
                 <div className="h-[calc(100%-40px)] overflow-y-auto p-1">
-                  {/* Proper 2x2 grid layout */}
-                  <div className="grid grid-cols-2 gap-4 auto-rows-[1fr]">
-                    <StudioCard
-                      title="Mind Map"
-                      subtitle="Visualize relationships between entities and themes."
-                      imageSrc="/features/mindmap.png"
-                      onClick={() => handleStudioAction("Mind Map")}
-                      disabled={isProcessing("Mind Map")}
-                      isGenerated={!!generatedContent.mindmap}
-                      buttonText="Generate"
-                      isLoading={isProcessing("Mind Map")}
-                    />
-                    <StudioCard
-                      title="Generate Podcast"
-                      subtitle="Two-voice discussion based on the analysis."
-                      imageSrc="/features/podcast.png"
-                      onClick={() => handleStudioAction("Generate Podcast")}
-                      disabled={isProcessing("Generate Podcast")}
-                      isGenerated={!!generatedContent.podcast}
-                      buttonText="Generate"
-                      isLoading={isProcessing("Generate Podcast")}
-                    />
-                    <StudioCard
-                      title="Generate Audio Report"
-                      subtitle="Narrated full report for listening on the go."
-                      imageSrc="/features/audioreport.png"
-                      onClick={() => handleStudioAction("Audio Report")}
-                      disabled={isProcessing("Audio Report")}
-                      isGenerated={!!generatedContent.audioReport}
-                      buttonText="Generate"
-                      isLoading={isProcessing("Audio Report")}
-                    />
-                    <StudioCard
-                      title="Export PDF"
-                      subtitle="Export a beautifully formatted PDF."
-                      imageSrc="/features/pdf.svg"
-                      onClick={() => handleStudioAction("Export PDF")}
-                      disabled={true}
-                      isGenerated={false}
-                      buttonText="Coming Soon"
-                      isLoading={false}
-                    />
+                  {/* Category: STRATEGIC */}
+                  <div className="mb-6">
+                    <div className="flex items-center mb-3">
+                      <div className={`flex-1 h-px ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`}></div>
+                      <span className={`px-3 text-xs font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Strategic</span>
+                      <div className={`flex-1 h-px ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`}></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 auto-rows-[1fr]">
+                      <StudioCard
+                        title="Mind Map"
+                        subtitle="Visualize relationships between entities and themes."
+                        imageSrc="/features/mindmap.png"
+                        onClick={() => handleStudioAction("Mind Map")}
+                        disabled={isProcessing("Mind Map")}
+                        isGenerated={!!generatedContent.mindmap}
+                        buttonText="Generate"
+                        isLoading={isProcessing("Mind Map")}
+                      />
+                      <StudioCard
+                        title="SWOT Analysis"
+                        subtitle="Strategic analysis framework"
+                        imageSrc="/features/swot.png"
+                        onClick={() => handleStudioAction("SWOT Analysis")}
+                        disabled={isProcessing("SWOT Analysis")}
+                        isGenerated={!!generatedContent.swotAnalysis}
+                        buttonText="Generate"
+                        isLoading={isProcessing("SWOT Analysis")}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Category: AUDIO */}
+                  <div className="mb-6">
+                    <div className="flex items-center mb-3">
+                      <div className={`flex-1 h-px ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`}></div>
+                      <span className={`px-3 text-xs font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Audio</span>
+                      <div className={`flex-1 h-px ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`}></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 auto-rows-[1fr]">
+                      <StudioCard
+                        title="Generate Podcast"
+                        subtitle="Two-voice discussion based on the analysis."
+                        imageSrc="/features/podcast.png"
+                        onClick={() => handleStudioAction("Generate Podcast")}
+                        disabled={isProcessing("Generate Podcast")}
+                        isGenerated={!!generatedContent.podcast}
+                        buttonText="Generate"
+                        isLoading={isProcessing("Generate Podcast")}
+                      />
+                      <StudioCard
+                        title="Generate Audio Report"
+                        subtitle="Narrated full report for listening on the go."
+                        imageSrc="/features/audioreport.png"
+                        onClick={() => handleStudioAction("Audio Report")}
+                        disabled={isProcessing("Audio Report")}
+                        isGenerated={!!generatedContent.audioReport}
+                        buttonText="Generate"
+                        isLoading={isProcessing("Audio Report")}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Category: EXPORT */}
+                  <div>
+                    <div className="flex items-center mb-3">
+                      <div className={`flex-1 h-px ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`}></div>
+                      <span className={`px-3 text-xs font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Export</span>
+                      <div className={`flex-1 h-px ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`}></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 auto-rows-[1fr]">
+                      <StudioCard
+                        title="Export PDF"
+                        subtitle="Export a beautifully formatted PDF."
+                        imageSrc="/features/pdf.svg"
+                        onClick={() => handleStudioAction("Export PDF")}
+                        disabled={true}
+                        isGenerated={false}
+                        buttonText="Coming Soon"
+                        isLoading={false}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

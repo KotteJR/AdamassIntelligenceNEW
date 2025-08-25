@@ -41,12 +41,36 @@ export async function POST(req: Request) {
     console.log(`[API /initiate-analysis] Triggering n8n workflow for job_id: ${jobId} at URL: ${n8nUrl.toString()}`);
     console.log(`[API /initiate-analysis] Payload:`, JSON.stringify(payload, null, 2));
     
-    const n8nResponse = await fetch(n8nUrl.toString(), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      signal: controller.signal
-    });
+    let n8nResponse;
+    try {
+      n8nResponse = await fetch(n8nUrl.toString(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+    } catch (fetchError: any) {
+      console.error('[API /initiate-analysis] Fetch error:', fetchError);
+      
+      // Handle SSL certificate errors
+      if (fetchError.code === 'DEPTH_ZERO_SELF_SIGNED_CERT' || 
+          fetchError.message.includes('self-signed certificate') ||
+          fetchError.message.includes('certificate')) {
+        
+        console.log('[API /initiate-analysis] SSL certificate issue detected...');
+        
+        return NextResponse.json({ 
+          error: 'SSL Certificate Error', 
+          details: 'The n8n webhook URL has an SSL certificate issue. Please check the certificate or use HTTPS with a valid certificate.',
+          troubleshooting: '1. Ensure n8n webhook URL uses HTTPS with valid certificate 2. Check if n8n server has proper SSL configuration 3. If using self-signed cert, configure SSL properly 4. Consider using HTTP instead of HTTPS for local development',
+          originalError: fetchError.message,
+          status: 500 
+        }, { status: 500 });
+      }
+      
+      // Re-throw other fetch errors
+      throw fetchError;
+    }
 
     clearTimeout(timeoutId); 
 
@@ -71,6 +95,9 @@ export async function POST(req: Request) {
       if (responseText.includes('There was a problem executing the workflow')) {
         errorMessage = 'n8n workflow execution failed';
         troubleshooting = 'This usually indicates: 1) Workflow is not properly configured, 2) Required nodes are missing, 3) Webhook node has errors, 4) Database connection issues, or 5) Workflow is not activated';
+      } else if (n8nResponse.status === 500) {
+        errorMessage = 'n8n server error';
+        troubleshooting = 'The n8n server encountered an internal error. Please check the n8n server logs and configuration.';
       }
       
       return NextResponse.json({ 
@@ -110,6 +137,20 @@ export async function POST(req: Request) {
             status: 500 
         }, { status: 500 });
     }
+    
+    // Handle SSL certificate errors that might not be caught in the fetch block
+    if (err.message && (err.message.includes('self-signed certificate') || 
+                       err.message.includes('certificate') ||
+                       err.code === 'DEPTH_ZERO_SELF_SIGNED_CERT')) {
+      return NextResponse.json({ 
+        error: 'SSL Certificate Error', 
+        details: 'The n8n webhook URL has an SSL certificate issue.',
+        troubleshooting: '1. Check if n8n webhook URL uses valid HTTPS certificate 2. For local development, consider using HTTP 3. Ensure n8n server has proper SSL configuration',
+        originalError: err.message,
+        status: 500 
+      }, { status: 500 });
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to initiate analysis', 
       details: err.message,

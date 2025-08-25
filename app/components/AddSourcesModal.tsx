@@ -87,7 +87,12 @@ export default function AddSourcesModal({
         }),
       });
       const initJson = await initResponse.json();
-      if (!initResponse.ok) throw new Error(initJson.details || initJson.error || "Failed to initiate analysis");
+      if (!initResponse.ok) {
+        const errorMsg = initJson.error || "Failed to initiate analysis";
+        const details = initJson.details ? ` Details: ${initJson.details}` : "";
+        const troubleshooting = initJson.troubleshooting ? ` Troubleshooting: ${initJson.troubleshooting}` : "";
+        throw new Error(`${errorMsg}${details}${troubleshooting}`);
+      }
       addLog("Workflow triggered. Waiting for sources...");
 
       let isComplete = false;
