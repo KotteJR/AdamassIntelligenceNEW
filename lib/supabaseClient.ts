@@ -15,5 +15,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    // Fix for Vercel deployment - ensure proper redirect handling
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+    flowType: 'pkce',
+    debug: process.env.NODE_ENV === 'development'
   },
 });

@@ -27,26 +27,59 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check for existing session
     const checkSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        console.log('[Auth] Checking existing session...');
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('[Auth] Session check error:', error);
+          setIsLoading(false);
+          return;
+        }
         
         if (session?.user) {
-          // Get user profile data
-          const { data: profile } = await supabase
-            .from('user_profiles')
-            .select('name, avatar_url')
-            .eq('id', session.user.id)
-            .single();
+          console.log('[Auth] Session found, loading user profile...');
+          try {
+            // Get user profile data with timeout
+            const { data: profile, error: profileError } = await Promise.race([
+              supabase
+                .from('user_profiles')
+                .select('name, avatar_url')
+                .eq('id', session.user.id)
+                .single(),
+              new Promise<any>((_, reject) => 
+                setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+              )
+            ]);
 
-          setUser({
-            id: session.user.id,
-            email: session.user.email || '',
-            name: profile?.name || session.user.user_metadata?.name || '',
-            avatarUrl: profile?.avatar_url || session.user.user_metadata?.avatar_url || undefined,
-          });
-          if (typeof window !== 'undefined') localStorage.setItem('sb-user-id', session.user.id);
+            if (profileError && profileError.code !== 'PGRST116') { // PGRST116 = no rows returned
+              console.warn('[Auth] Profile fetch error:', profileError);
+            }
+
+            const userData = {
+              id: session.user.id,
+              email: session.user.email || '',
+              name: profile?.name || session.user.user_metadata?.name || '',
+              avatarUrl: profile?.avatar_url || session.user.user_metadata?.avatar_url || undefined,
+            };
+
+            console.log('[Auth] User authenticated:', userData.email);
+            setUser(userData);
+            if (typeof window !== 'undefined') localStorage.setItem('sb-user-id', session.user.id);
+          } catch (profileError) {
+            console.warn('[Auth] Profile loading failed, using basic user data:', profileError);
+            // Use basic user data even if profile fetch fails
+            setUser({
+              id: session.user.id,
+              email: session.user.email || '',
+              name: session.user.user_metadata?.name || '',
+              avatarUrl: session.user.user_metadata?.avatar_url || undefined,
+            });
+          }
+        } else {
+          console.log('[Auth] No existing session found');
         }
       } catch (error) {
-        console.error('Session check error:', error);
+        console.error('[Auth] Session check error:', error);
       } finally {
         setIsLoading(false);
       }
@@ -57,23 +90,58 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
-          const { data: profile } = await supabase
-            .from('user_profiles')
-            .select('name, avatar_url')
-            .eq('id', session.user.id)
-            .single();
+        console.log('[Auth] Auth state change:', event, session?.user?.email || 'no user');
+        
+        try {
+          if (event === 'SIGNED_IN' && session?.user) {
+            console.log('[Auth] User signed in, loading profile...');
+            
+            try {
+              const { data: profile, error: profileError } = await Promise.race([
+                supabase
+                  .from('user_profiles')
+                  .select('name, avatar_url')
+                  .eq('id', session.user.id)
+                  .single(),
+                new Promise<any>((_, reject) => 
+                  setTimeout(() => reject(new Error('Profile fetch timeout')), 3000)
+                )
+              ]);
 
-          setUser({
-            id: session.user.id,
-            email: session.user.email || '',
-            name: profile?.name || session.user.user_metadata?.name || '',
-            avatarUrl: profile?.avatar_url || session.user.user_metadata?.avatar_url || undefined,
-          });
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
+              if (profileError && profileError.code !== 'PGRST116') {
+                console.warn('[Auth] Profile fetch error in auth change:', profileError);
+              }
+
+              const userData = {
+                id: session.user.id,
+                email: session.user.email || '',
+                name: profile?.name || session.user.user_metadata?.name || '',
+                avatarUrl: profile?.avatar_url || session.user.user_metadata?.avatar_url || undefined,
+              };
+
+              setUser(userData);
+              console.log('[Auth] User profile loaded in auth change');
+            } catch (profileError) {
+              console.warn('[Auth] Profile loading failed in auth change, using basic data:', profileError);
+              setUser({
+                id: session.user.id,
+                email: session.user.email || '',
+                name: session.user.user_metadata?.name || '',
+                avatarUrl: session.user.user_metadata?.avatar_url || undefined,
+              });
+            }
+          } else if (event === 'SIGNED_OUT') {
+            console.log('[Auth] User signed out');
+            setUser(null);
+          } else if (event === 'TOKEN_REFRESHED') {
+            console.log('[Auth] Token refreshed');
+            // Don't reload user data on token refresh if we already have it
+          }
+        } catch (error) {
+          console.error('[Auth] Error in auth state change:', error);
+        } finally {
+          setIsLoading(false);
         }
-        setIsLoading(false);
       }
     );
 
