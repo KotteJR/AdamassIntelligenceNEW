@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../../lib/supabaseClient';
+import { supabaseAdmin } from '../../../../lib/supabaseAdmin';
 import fs from 'fs';
 import path from 'path';
 
@@ -17,7 +18,24 @@ export async function GET(
   }
 
   try {
-    // First try to get from Supabase user_analyses
+    // First try to get from Supabase Storage (mimics your Storage/ folder)
+    const fileName = `report-${jobId}.json`;
+    try {
+      const { data: fileData, error: storageError } = await supabaseAdmin.storage
+        .from('reports')
+        .download(fileName);
+
+      if (!storageError && fileData) {
+        const content = await fileData.text();
+        const reportData = JSON.parse(content);
+        console.log(`Found report ${jobId} in Supabase Storage`);
+        return NextResponse.json(reportData);
+      }
+    } catch (storageErr) {
+      console.log(`Report ${jobId} not found in Supabase Storage, trying database...`);
+    }
+
+    // Second try: get from Supabase user_analyses table
     const { data, error } = await supabase
       .from('user_analyses')
       .select('report_data, company_alias, created_at')
@@ -25,6 +43,7 @@ export async function GET(
       .single();
 
     if (!error && data?.report_data) {
+      console.log(`Found report ${jobId} in Supabase database`);
       // Return the report data with additional metadata
       return NextResponse.json({
         jobId,
@@ -34,13 +53,15 @@ export async function GET(
       });
     }
 
-    // Fallback to local Storage if not found in Supabase
-    const filePath = path.join(STORAGE_DIR, `report-${jobId}.json`);
+    // Third try: fallback to local Storage (for development)
+    const filePath = path.join(STORAGE_DIR, fileName);
     if (fs.existsSync(filePath)) {
       const content = fs.readFileSync(filePath, 'utf-8');
+      console.log(`Found report ${jobId} in local Storage`);
       return NextResponse.json(JSON.parse(content));
     }
 
+    console.log(`Report ${jobId} not found anywhere`);
     return NextResponse.json({ error: 'Report not found' }, { status: 404 });
 
   } catch (error: any) {

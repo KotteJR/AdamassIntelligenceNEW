@@ -203,7 +203,7 @@ export default function AddSourcesModal({
         ...processJson,
       };
 
-      // Save to both local Storage (for backward compatibility) and Supabase
+      // Save to Storage folder (local/Vercel) and Supabase Storage bucket
       try {
         const saveRes = await fetch("/api/reports", {
           method: "POST",
@@ -212,15 +212,16 @@ export default function AddSourcesModal({
         });
         if (!saveRes.ok) {
           const saveError = await saveRes.json();
-          console.warn('[AddSourcesModal] Warning: Failed to save to /api/reports:', saveError);
-          addLog("Warning: Local storage save failed, continuing...");
+          console.warn('[AddSourcesModal] Warning: Failed to save to storage:', saveError);
+          addLog("Warning: Storage save failed, continuing...");
         } else {
-          console.log('[AddSourcesModal] Successfully saved to /api/reports');
+          console.log('[AddSourcesModal] Successfully saved to storage');
+          addLog("Report saved to storage successfully.");
         }
       } catch (saveError) {
-        console.warn('[AddSourcesModal] Error saving to /api/reports:', saveError);
-        addLog("Warning: Local storage save failed, continuing...");
-        // Don't throw, continue with Supabase save
+        console.warn('[AddSourcesModal] Error saving to storage:', saveError);
+        addLog("Warning: Storage save failed, continuing...");
+        // Don't throw, continue with database save
       }
 
       // CRITICAL: Ensure completion state is set regardless of save operations
@@ -400,7 +401,7 @@ export default function AddSourcesModal({
                           onComplete(jobId, companyAlias);
                         }
                       }}
-                      className={`rounded border-2 px-4 py-2 text-sm font-medium transition-colors ${
+                      className={`rounded-lg border px-4 py-2 text-sm font-medium ${
                         isDark 
                           ? 'border-green-500 text-green-400 hover:bg-green-900/20' 
                           : 'border-green-300 text-green-600 hover:bg-green-50'

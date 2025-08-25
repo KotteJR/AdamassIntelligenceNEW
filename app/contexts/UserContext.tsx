@@ -31,6 +31,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (error) {
           console.warn('[Auth] Session check error:', error);
+          // Clear invalid session if refresh token is bad
+          if (error.message?.includes('refresh') || error.message?.includes('token') || error.message?.includes('Invalid Refresh Token')) {
+            console.log('[Auth] Clearing invalid session due to token error');
+            try {
+              await supabase.auth.signOut();
+            } catch (signOutError) {
+              console.warn('[Auth] Failed to sign out:', signOutError);
+            }
+          }
+          setUser(null);
           setIsLoading(false);
           return;
         }
@@ -75,6 +85,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       } catch (error) {
         console.error('[Auth] Session check error:', error);
+        // Handle AuthApiError specifically
+        if (error.message?.includes('Invalid Refresh Token') || error.message?.includes('Refresh Token Not Found')) {
+          console.log('[Auth] Clearing invalid refresh token');
+          try {
+            await supabase.auth.signOut();
+          } catch (signOutError) {
+            console.warn('[Auth] Failed to sign out during token cleanup:', signOutError);
+          }
+          setUser(null);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -130,6 +150,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         } catch (error) {
           console.error('[Auth] Error in auth state change:', error);
+          // Handle refresh token errors in auth state changes
+          if (error.message?.includes('Invalid Refresh Token') || error.message?.includes('Refresh Token Not Found')) {
+            console.log('[Auth] Clearing invalid refresh token in auth state change');
+            try {
+              await supabase.auth.signOut();
+            } catch (signOutError) {
+              console.warn('[Auth] Failed to sign out during auth state token cleanup:', signOutError);
+            }
+            setUser(null);
+          }
         } finally {
           setIsLoading(false);
         }
