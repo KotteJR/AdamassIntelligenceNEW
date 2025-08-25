@@ -192,7 +192,7 @@ function HomeContent() {
         {/* Featured (global, horizontally scrollable) */}
         <section className="mb-10">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className={`text-sm font-semibold uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'theme-text-secondary'}`}>Featured Analyses</h2>
+            <h2 className={`text-sm font-semibold uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Featured Analyses</h2>
             <div className={`text-xs ${isDark ? 'theme-text-muted' : 'theme-text-muted'}`}>Most recent</div>
           </div>
           <div className="flex snap-x gap-4 overflow-x-auto pb-2">
@@ -321,6 +321,8 @@ function HomeContent() {
             )}
           </div>
         </section>
+
+
       </div>
 
       <AddSourcesModal

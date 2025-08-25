@@ -27,17 +27,15 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check for existing session
     const checkSession = async () => {
       try {
-        console.log('[Auth] Checking existing session...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('[Auth] Session check error:', error);
+          console.warn('[Auth] Session check error:', error);
           setIsLoading(false);
           return;
         }
         
         if (session?.user) {
-          console.log('[Auth] Session found, loading user profile...');
           try {
             // Get user profile data with timeout
             const { data: profile, error: profileError } = await Promise.race([
@@ -62,11 +60,10 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
               avatarUrl: profile?.avatar_url || session.user.user_metadata?.avatar_url || undefined,
             };
 
-            console.log('[Auth] User authenticated:', userData.email);
             setUser(userData);
             if (typeof window !== 'undefined') localStorage.setItem('sb-user-id', session.user.id);
           } catch (profileError) {
-            console.warn('[Auth] Profile loading failed, using basic user data:', profileError);
+            console.warn('[Auth] Profile loading failed, using basic user data');
             // Use basic user data even if profile fetch fails
             setUser({
               id: session.user.id,
@@ -75,8 +72,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
               avatarUrl: session.user.user_metadata?.avatar_url || undefined,
             });
           }
-        } else {
-          console.log('[Auth] No existing session found');
         }
       } catch (error) {
         console.error('[Auth] Session check error:', error);
@@ -90,12 +85,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('[Auth] Auth state change:', event, session?.user?.email || 'no user');
-        
         try {
           if (event === 'SIGNED_IN' && session?.user) {
-            console.log('[Auth] User signed in, loading profile...');
-            
             try {
               const { data: profile, error: profileError } = await Promise.race([
                 supabase
