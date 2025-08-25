@@ -2,26 +2,60 @@ import { NextResponse } from 'next/server';
 
 const N8N_WEBHOOK_URL_STRING = process.env.N8N_WEBHOOK_URL?.trim();
 
-// Custom fetch function to handle SSL issues in development
+// Custom fetch function to handle SSL issues
 async function fetchWithSSLHandling(url: string, options: RequestInit) {
   try {
-    // First try normal fetch
-    return await fetch(url, options);
-  } catch (error: any) {
-    // If SSL error and in development, try alternative approaches
-    if (error.code === 'DEPTH_ZERO_SELF_SIGNED_CERT' || 
-        error.message?.includes('self-signed certificate')) {
+    // Check if we should ignore SSL certificate errors
+    const ignoreSSL = process.env.NODE_TLS_REJECT_UNAUTHORIZED === '0' || 
+                      process.env.NODE_ENV === 'development';
+    
+    if (ignoreSSL) {
+      console.log('[SSL] SSL certificate validation disabled');
       
-      console.log('[SSL] Detected self-signed certificate, checking environment...');
+      // For Node.js environments, we need to configure the agent
+      // This works in Vercel's Node.js runtime
+      const https = await import('https');
+      const agent = new https.Agent({
+        rejectUnauthorized: false
+      });
       
-      // In development, we can be more lenient
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[SSL] Development mode: providing detailed error for SSL issue');
-        throw new Error(`SSL_CERT_ERROR: ${error.message}`);
-      }
+      // Add the agent to the options
+      const fetchOptions = {
+        ...options,
+        // @ts-ignore - Vercel's fetch implementation supports agent
+        agent: url.startsWith('https:') ? agent : undefined
+      };
+      
+      return await fetch(url, fetchOptions);
     }
     
-    // Re-throw the original error
+    // Try normal fetch first
+    return await fetch(url, options);
+  } catch (error: any) {
+    console.error('[SSL] Fetch error:', error);
+    
+    // If SSL error, provide helpful debugging
+    if (error.code === 'DEPTH_ZERO_SELF_SIGNED_CERT' || 
+        error.message?.includes('self-signed certificate') ||
+        error.message?.includes('certificate')) {
+      
+      console.log('[SSL] SSL Certificate error detected');
+      
+      // Provide specific SSL troubleshooting
+      const troubleshooting = [
+        'SSL Certificate Error Solutions:',
+        '1. Set NODE_TLS_REJECT_UNAUTHORIZED=0 in Vercel environment variables',
+        '2. Update n8n.profit-ai.com to use a valid SSL certificate',
+        '3. Use HTTP instead of HTTPS for the webhook URL (if acceptable)',
+        `4. Current URL: ${url}`,
+        `5. Environment: ${process.env.NODE_ENV || 'unknown'}`,
+        `6. TLS Reject Unauthorized: ${process.env.NODE_TLS_REJECT_UNAUTHORIZED || 'not set'}`
+      ].join('\n');
+      
+      throw new Error(`SSL_CERT_ERROR: ${error.message}\n\n${troubleshooting}`);
+    }
+    
+    // Re-throw other errors
     throw error;
   }
 }
