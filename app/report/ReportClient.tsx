@@ -323,10 +323,16 @@ const ReportClient = () => {
                     {report.adamassSynthesisReport.key_risks_and_mitigation.map((item: any, index: number) => (
                       <div key={index} className={`border rounded-lg p-4 border-l-4 border-red-500 ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
                         <div className="flex justify-between items-start mb-3">
-                          <h4 className="text-sm font-semibold text-red-700 flex-grow pr-2">
+                          <h4 className={`text-sm font-semibold flex-grow pr-2 ${isDark ? 'text-red-400' : 'text-red-700'}`}>
                             <span className="font-bold">Risk:</span> {item.risk}
                           </h4>
-                          <span className={`px-2 py-1 text-xs font-medium rounded-lg whitespace-nowrap ${item.severity === 'High' ? 'bg-red-100 text-red-700' : item.severity === 'Medium' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}>
+                          <span className={`px-2 py-1 text-xs font-medium rounded-lg whitespace-nowrap ${
+                            item.severity === 'High' 
+                              ? (isDark ? 'bg-red-900/30 text-red-400 border border-red-700' : 'bg-red-100 text-red-700') 
+                              : item.severity === 'Medium' 
+                                ? (isDark ? 'bg-amber-900/30 text-amber-400 border border-amber-700' : 'bg-amber-100 text-amber-700') 
+                                : (isDark ? 'bg-green-900/30 text-green-400 border border-green-700' : 'bg-green-100 text-green-700')
+                          }`}>
                             {item.severity} Severity
                           </span>
                         </div>
@@ -434,9 +440,11 @@ const ReportClient = () => {
                 <div className="flex flex-wrap gap-2">
                   {architecture.badges.map((badge: any, i: number) => (
                     <span key={i} className={`px-3 py-1 text-xs font-medium rounded-lg ${
-                      badge.type === 'positive' ? 'bg-green-100 text-green-700 border border-green-200' : 
-                      badge.type === 'negative' ? 'bg-red-100 text-red-700 border border-red-200' : 
-                      `${isDark ? 'bg-slate-700 text-slate-200 border border-slate-600' : 'bg-slate-100 text-slate-700 border border-slate-200'}`
+                      badge.type === 'positive' 
+                        ? (isDark ? 'bg-green-900/30 text-green-400 border border-green-700' : 'bg-green-100 text-green-700 border border-green-200')
+                        : badge.type === 'negative' 
+                          ? (isDark ? 'bg-red-900/30 text-red-400 border border-red-700' : 'bg-red-100 text-red-700 border border-red-200')
+                          : `${isDark ? 'bg-slate-700 text-slate-200 border border-slate-600' : 'bg-slate-100 text-slate-700 border border-slate-200'}`
                     }`}>{badge.label || badge}</span>
                   ))}
                 </div>
@@ -446,10 +454,10 @@ const ReportClient = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {architecture.main_good && (
                   <div className={`border rounded-xl p-6 border-l-4 border-green-500 ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
-                    <h4 className="text-base font-semibold text-green-700 mb-4">Key Strengths</h4>
+                    <h4 className={`text-base font-semibold mb-4 ${isDark ? 'text-green-400' : 'text-green-700'}`}>Key Strengths</h4>
                     <ul className="space-y-3">
                       {architecture.main_good.map((good: string, i: number) => (
-                        <li key={i} className="flex items-start gap-3 text-green-700">
+                        <li key={i} className={`flex items-start gap-3 ${isDark ? 'text-green-400' : 'text-green-700'}`}>
                           <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                           </svg>
@@ -461,10 +469,10 @@ const ReportClient = () => {
                 )}
                 {architecture.main_risks && (
                   <div className={`border rounded-xl p-6 border-l-4 border-red-500 ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
-                    <h4 className="text-base font-semibold text-red-700 mb-4">Key Risks</h4>
+                    <h4 className={`text-base font-semibold mb-4 ${isDark ? 'text-red-400' : 'text-red-700'}`}>Key Risks</h4>
                     <ul className="space-y-3">
                       {architecture.main_risks.map((risk: string, i: number) => (
-                        <li key={i} className="flex items-start gap-3 text-red-700">
+                        <li key={i} className={`flex items-start gap-3 ${isDark ? 'text-red-400' : 'text-red-700'}`}>
                           <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                           </svg>
@@ -519,9 +527,11 @@ const ReportClient = () => {
                 <div className="flex flex-wrap gap-2">
                   {security.badges.map((badge: any, i: number) => (
                     <span key={i} className={`px-3 py-1 text-xs font-medium rounded-lg ${
-                      badge.type === 'positive' ? 'bg-green-100 text-green-700 border border-green-200' : 
-                      badge.type === 'negative' ? 'bg-red-100 text-red-700 border border-red-200' : 
-                      `${isDark ? 'bg-slate-700 text-slate-200 border border-slate-600' : 'bg-slate-100 text-slate-700 border border-slate-200'}`
+                      badge.type === 'positive' 
+                        ? (isDark ? 'bg-green-900/30 text-green-400 border border-green-700' : 'bg-green-100 text-green-700 border border-green-200')
+                        : badge.type === 'negative' 
+                          ? (isDark ? 'bg-red-900/30 text-red-400 border border-red-700' : 'bg-red-100 text-red-700 border border-red-200')
+                          : `${isDark ? 'bg-slate-700 text-slate-200 border border-slate-600' : 'bg-slate-100 text-slate-700 border border-slate-200'}`
                     }`}>{badge.label || badge}</span>
                   ))}
                 </div>
@@ -531,10 +541,10 @@ const ReportClient = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {security.main_good && Array.isArray(security.main_good) && security.main_good.length > 0 && (
                   <div className={`border rounded-xl p-6 border-l-4 border-green-500 ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
-                    <h4 className="text-base font-semibold text-green-700 mb-4">Key Strengths</h4>
+                    <h4 className={`text-base font-semibold mb-4 ${isDark ? 'text-green-400' : 'text-green-700'}`}>Key Strengths</h4>
                     <ul className="space-y-3">
                       {security.main_good.map((good: string, i: number) => (
-                        <li key={i} className="flex items-start gap-3 text-green-700">
+                        <li key={i} className={`flex items-start gap-3 ${isDark ? 'text-green-400' : 'text-green-700'}`}>
                           <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                           </svg>
@@ -546,10 +556,10 @@ const ReportClient = () => {
                 )}
                 {security.main_risks && Array.isArray(security.main_risks) && security.main_risks.length > 0 && (
                   <div className={`border rounded-xl p-6 border-l-4 border-red-500 ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
-                    <h4 className="text-base font-semibold text-red-700 mb-4">Key Risks</h4>
+                    <h4 className={`text-base font-semibold mb-4 ${isDark ? 'text-red-400' : 'text-red-700'}`}>Key Risks</h4>
                     <ul className="space-y-3">
                       {security.main_risks.map((risk: string, i: number) => (
-                        <li key={i} className="flex items-start gap-3 text-red-700">
+                        <li key={i} className={`flex items-start gap-3 ${isDark ? 'text-red-400' : 'text-red-700'}`}>
                           <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                           </svg>

@@ -17,11 +17,17 @@ interface StrategicRecommendationItemProps {
   index: number;
 }
 
-const priorityColors = {
-  High: 'border-red-500 bg-red-100 text-red-700',
-  Medium: 'border-amber-500 bg-amber-100 text-amber-700',
-  Low: 'border-green-500 bg-green-100 text-green-700',
-};
+const getPriorityColors = (isDark: boolean) => ({
+  High: isDark 
+    ? 'border-red-500 bg-red-900/30 text-red-400' 
+    : 'border-red-500 bg-red-100 text-red-700',
+  Medium: isDark 
+    ? 'border-amber-500 bg-amber-900/30 text-amber-400' 
+    : 'border-amber-500 bg-amber-100 text-amber-700',
+  Low: isDark 
+    ? 'border-green-500 bg-green-900/30 text-green-400' 
+    : 'border-green-500 bg-green-100 text-green-700',
+});
 
 const getCategoryColor = (isDark: boolean) => isDark ? 'theme-muted theme-text' : 'bg-slate-100 text-slate-700';
 
@@ -54,6 +60,7 @@ const StrategicRecommendationItem: React.FC<StrategicRecommendationItemProps> = 
     visual_icon_suggestion,
   } = recommendation;
 
+  const priorityColors = getPriorityColors(isDark);
   const prioColor = priorityColors[priority] || priorityColors.Medium;
   const catColor = getCategoryColor(isDark);
 
