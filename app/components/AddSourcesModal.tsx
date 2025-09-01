@@ -106,6 +106,24 @@ export default function AddSourcesModal({
       addLog("Company alias and website URL are required.");
       return;
     }
+    // Duplicate check (exact + OpenAI fuzzy). Block creation if match found.
+    try {
+      const dupRes = await fetch('/api/check-duplicate-company', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyAlias, legalAlias })
+      });
+      const dupJson = await dupRes.json();
+      if (dupRes.ok && dupJson.duplicate && dupJson.match?.jobId) {
+        addLog(`Existing analysis found for ${companyAlias}. Opening existing report...`);
+        if (typeof window !== 'undefined') localStorage.setItem('currentJobId', dupJson.match.jobId);
+        onComplete(dupJson.match.jobId, dupJson.match.company || companyAlias);
+        return;
+      }
+    } catch (e) {
+      // Non-blocking on duplicate check failure
+      addLog('Duplicate check unavailable, proceeding...');
+    }
     const newJob = uuidv4();
     setJobId(newJob);
     setIsProcessing(true);

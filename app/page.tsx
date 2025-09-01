@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import AddSourcesModal from "./components/AddSourcesModal";
 import ThemeToggle, { useTheme } from "./components/ThemeToggle";
+import BrowseReportsModal from "./components/BrowseReportsModal";
 import AuthModal from "./components/AuthModal";
 import { useUser } from "./contexts/UserContext";
 import { supabase } from "../lib/supabaseClient";
@@ -42,6 +43,7 @@ function HomeContent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [allReports, setAllReports] = useState<StoredReportIndexItem[]>([]);
+  const [isBrowseOpen, setIsBrowseOpen] = useState(false);
   const [userReports, setUserReports] = useState<StoredReportIndexItem[]>([]);
   const [myIds, setMyIds] = useState<string[]>([]);
 
@@ -127,6 +129,8 @@ function HomeContent() {
     return () => document.removeEventListener('click', handler);
   }, []);
 
+  const filteredFeatured = allReports; // keep most recent ordering
+
   return (
     <main className={`min-h-screen ${isDark ? 'theme-bg' : 'theme-bg'}`}>
       <Suspense fallback={null}>
@@ -193,12 +197,17 @@ function HomeContent() {
       <div className="mx-auto w-full max-w-7xl px-4 py-8">
         {/* Featured (global, horizontally scrollable) */}
         <section className="mb-10">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-3 flex items-center justify-between gap-3">
             <h2 className={`text-sm font-semibold uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Featured Analyses</h2>
-            <div className={`text-xs ${isDark ? 'theme-text-muted' : 'theme-text-muted'}`}>Most recent</div>
+            <button
+              onClick={() => setIsBrowseOpen(true)}
+              className={`rounded-full px-3 py-1.5 text-xs font-medium ${isDark ? 'theme-muted theme-text-muted' : 'bg-slate-100 text-slate-700'}`}
+            >
+              View all
+            </button>
           </div>
           <div className="flex snap-x gap-4 overflow-x-auto pb-2">
-            {allReports.map((r, idx) => {
+            {filteredFeatured.map((r, idx) => {
               const background = generateCardBackground(r.companyAlias, r.jobId);
               const img = getProjectImage(r.companyAlias, r.jobId);
               const textColor = getTextColor(background);
@@ -343,6 +352,16 @@ function HomeContent() {
           loadUserReports();
           loadAllReports();
           // Then open the analysis
+          openAnalysis(jid);
+        }}
+      />
+
+      <BrowseReportsModal
+        open={isBrowseOpen}
+        onClose={() => setIsBrowseOpen(false)}
+        reports={allReports}
+        onOpenReport={(jid) => {
+          setIsBrowseOpen(false);
           openAnalysis(jid);
         }}
       />

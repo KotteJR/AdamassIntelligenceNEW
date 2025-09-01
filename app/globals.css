@@ -39,6 +39,29 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Global smooth color/border transitions */
+:root {
+  --hover-duration: 220ms;
+  --hover-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+button, [role="button"], a, .hoverable, .theme-card, .animated-card, .rounded-lg, .rounded-xl {
+  transition-property: background-color, color, border-color, box-shadow, filter;
+  transition-duration: var(--hover-duration);
+  transition-timing-function: var(--hover-ease);
+}
+
+/* Enforce smooth color/border transitions across the app */
+*, *::before, *::after {
+  transition-property: background-color, color, border-color, box-shadow, outline-color, fill, stroke, filter;
+  transition-duration: var(--hover-duration);
+  transition-timing-function: var(--hover-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; }
+}
+
 /* Animated gradient helper (used on featured cards) */
 .animate-gradient {
   background-size: 200% 200% !important;
