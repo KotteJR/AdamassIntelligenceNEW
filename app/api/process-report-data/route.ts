@@ -288,36 +288,53 @@ export async function POST(req: Request) {
     let security = null;
     let companyIntelligence = null;
 
-    // Generate Architecture analysis from raw data
+    // Generate Architecture analysis from raw data (+ include user docs if provided)
     const rawArchitectureData = allSources
       .filter(row => ['BuiltWith', 'PageSpeed'].includes(row.source))
       .map(row => ({
         source: row.source,
         data: row.data
       }));
+    const userDocs = allSources.find(row => row.source === 'UserDocuments');
+    if (userDocs?.data?.documents?.length) {
+      rawArchitectureData.push({
+        source: 'UserDocuments',
+        data: userDocs.data
+      });
+    }
     
     if (rawArchitectureData.length > 0) {
       const archData = JSON.stringify(rawArchitectureData);
       architecture = await callOpenAI(archData, 'architecture', openai);
     }
 
-    // Generate Security analysis from raw data
+    // Generate Security analysis from raw data (+ include user docs if provided)
     const rawSecurityData = allSources
       .filter(row => ['DnsDumpster', 'SubDomains', 'SecureHeaders'].includes(row.source))
       .map(row => ({
         source: row.source,
         data: row.data
       }));
+    if (userDocs?.data?.documents?.length) {
+      rawSecurityData.push({
+        source: 'UserDocuments',
+        data: userDocs.data
+      });
+    }
     
     if (rawSecurityData.length > 0) {
       const secData = JSON.stringify(rawSecurityData);
       security = await callOpenAI(secData, 'security', openai);
     }
 
-    // Process company intelligence
-    if (crunchbaseRow?.data) {
-      const crunchbaseData = typeof crunchbaseRow.data === 'string' ? crunchbaseRow.data : JSON.stringify(crunchbaseRow.data);
-      companyIntelligence = await callOpenAI(crunchbaseData, 'company_intelligence', openai);
+    // Process company intelligence (supplement Crunchbase with UserDocuments if present)
+    if (crunchbaseRow?.data || userDocs?.data?.documents?.length) {
+      const combinedCI = {
+        crunchbase: crunchbaseRow?.data ?? null,
+        user_documents: userDocs?.data ?? null
+      };
+      const ciText = typeof combinedCI === 'string' ? combinedCI : JSON.stringify(combinedCI);
+      companyIntelligence = await callOpenAI(ciText, 'company_intelligence', openai);
     }
 
     const report = {

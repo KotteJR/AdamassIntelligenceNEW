@@ -8,7 +8,8 @@ const EXPECTED_SOURCES = [
   'PageSpeed',
   'DnsDumpster',
   'SubDomains',
-  'SecureHeaders'
+  'SecureHeaders',
+  'UserDocuments'
   // Add other essential raw data sources if any
 ];
 

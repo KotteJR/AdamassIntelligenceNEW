@@ -114,6 +114,48 @@ export default function AddSourcesModal({
     setLogs([`Initializing analysis for ${companyAlias} (Job ID: ${newJob})`]);
 
     try {
+      // 0. Optionally ingest uploaded files as user documents
+      if (files.length > 0) {
+        addLog(`Processing ${files.length} uploaded file(s)...`);
+        const readAsText = (file: File) => new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : '');
+          reader.onerror = () => reject(reader.error);
+          reader.readAsText(file);
+        });
+
+        const documents = [] as { filename: string; mimeType?: string; text: string }[];
+        for (const f of files) {
+          try {
+            const text = await readAsText(f);
+            if (text && text.trim()) {
+              documents.push({ filename: f.name, mimeType: f.type, text });
+            } else {
+              addLog(`Skipped empty text for ${f.name}`);
+            }
+          } catch (e) {
+            addLog(`Failed to read ${f.name} as text; skipping.`);
+          }
+        }
+
+        if (documents.length > 0) {
+          addLog(`Uploading ${documents.length} text document(s) to analysis...`);
+          const ingestRes = await fetch('/api/ingest-user-docs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jobId: newJob, documents })
+          });
+          const ingestJson = await ingestRes.json();
+          if (!ingestRes.ok) {
+            addLog(`Warning: Failed to upload documents: ${ingestJson.error || ingestJson.details || 'Unknown error'}`);
+          } else {
+            addLog(`Uploaded ${ingestJson.saved || documents.length} document(s) for inclusion.`);
+          }
+        } else {
+          addLog('No readable text extracted from files; continuing without uploads.');
+        }
+      }
+
       addLog("Triggering workflow...");
       const initResponse = await fetch("/api/initiate-analysis", {
         method: "POST",

@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS user_artifacts (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users ON DELETE CASCADE,
   job_id TEXT NOT NULL,
-  kind TEXT NOT NULL CHECK (kind IN ('audio_overview','audio_report','podcast','mindmap')),
+  kind TEXT NOT NULL CHECK (kind IN ('audio_overview','audio_report','podcast','mindmap','swot_analysis')),
   meta JSONB,             -- e.g., script, projectId
   content JSONB,          -- mindmap JSON or other structured content
   audio_base64 TEXT,      -- optionally store audio (base64) if small
