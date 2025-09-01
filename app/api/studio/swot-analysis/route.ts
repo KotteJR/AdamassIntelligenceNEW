@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '../../../../lib/supabaseAdmin';
+import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
 
 export const runtime = 'nodejs';
@@ -256,8 +256,11 @@ IMPORTANT: Return ONLY valid, complete JSON. No markdown, no explanations, just 
 
     // Optional persistence if frontend provides userId and jobId
     try {
-      if (userId && jobId) {
-        await supabaseAdmin.from('user_artifacts').insert([
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
+      const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
+      if (url && anon && userId && jobId) {
+        const supabase = createClient(url, anon);
+        await supabase.from('user_artifacts').insert([
           {
             user_id: userId,
             job_id: jobId,
