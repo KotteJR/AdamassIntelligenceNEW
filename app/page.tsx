@@ -266,9 +266,9 @@ function HomeContent() {
             <h2 className={`text-sm font-semibold uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>{user ? 'Your Recent Analyses' : 'Recent Analyses'}</h2>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="flex snap-x gap-4 overflow-x-auto pb-2">
             {/* Create new tile (requires auth) */}
-            <button onClick={() => (user ? setIsModalOpen(true) : setIsAuthModalOpen(true))} className={`flex h-32 flex-col items-center justify-center rounded-xl border border-dashed ${isDark ? 'theme-border theme-card theme-text-secondary' : 'border-slate-300 bg-white text-slate-600'} shadow-sm transition hover:opacity-80`}>
+            <button onClick={() => (user ? setIsModalOpen(true) : setIsAuthModalOpen(true))} className={`snap-start w-64 h-32 shrink-0 flex flex-col items-center justify-center rounded-xl border border-dashed ${isDark ? 'theme-border theme-card theme-text-secondary' : 'border-slate-300 bg-white text-slate-600'} shadow-sm transition hover:opacity-80`}>
               <span
                 className={`mb-2 inline-flex h-9 w-9 items-center justify-center rounded-full border text-lg font-semibold ${
                   isDark
@@ -292,7 +292,7 @@ function HomeContent() {
                 <button 
                   key={r.jobId} 
                   onClick={() => openAnalysis(r.jobId)} 
-                  className={`group h-32 rounded-xl p-3 text-left relative overflow-hidden animated-card ${background.gradient}`}
+                  className={`snap-start w-64 h-32 shrink-0 group rounded-xl p-3 text-left relative overflow-hidden animated-card ${background.gradient}`}
                   style={{
                     ...getBackgroundStyle(background),
                     // randomize hues/duration per card via CSS vars
@@ -334,7 +334,7 @@ function HomeContent() {
             })}
 
             {(user ? userReports : []).length === 0 && (
-              <div className={`col-span-full rounded-xl border p-4 text-sm ${isDark ? 'theme-border theme-card theme-text-secondary' : 'border-slate-200 bg-white text-slate-600'}`}>
+              <div className={`snap-start w-64 shrink-0 rounded-xl border p-4 text-sm flex items-center justify-center ${isDark ? 'theme-border theme-card theme-text-secondary' : 'border-slate-200 bg-white text-slate-600'}`}>
                 {user ? 'No analyses yet. Create your first one!' : 'Sign in to view your recent analyses'}
               </div>
             )}

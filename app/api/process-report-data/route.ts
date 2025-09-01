@@ -243,6 +243,7 @@ const callOpenAI = async (aiText: string, context: string, openai: OpenAI) => {
       messages: [{ role: "user", content: prompt }],
       // Ensure response_format is set if you expect JSON consistently from all prompts
       response_format: { type: "json_object" }, // RE-ENABLED for more reliable JSON output
+      temperature: 0.2,
     });
 
     structuredDataString = response.choices[0].message.content?.trim() || null;
@@ -355,6 +356,16 @@ export async function POST(req: Request) {
       });
       
       adamassSynthesisReport = await callOpenAI(combinedDataForSynthesis, 'adamass_synthesis', openai);
+      // Normalize confidence score if it's outside 0-10 or a string
+      try {
+        if (adamassSynthesisReport?.overall_assessment?.confidence_score != null) {
+          const num = Number(adamassSynthesisReport.overall_assessment.confidence_score);
+          if (!Number.isNaN(num)) {
+            const clamped = Math.max(0, Math.min(10, num));
+            adamassSynthesisReport.overall_assessment.confidence_score = Number(clamped.toFixed(1));
+          }
+        }
+      } catch {}
     }
     // *****************************************
 
