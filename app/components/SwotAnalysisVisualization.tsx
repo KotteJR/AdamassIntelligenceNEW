@@ -83,45 +83,33 @@ const SwotAnalysisVisualization: React.FC<SwotAnalysisVisualizationProps> = ({ d
   const SwotSection = ({ 
     title, 
     items, 
-    bgColor, 
-    borderColor, 
+    headerBg, 
     icon 
   }: { 
     title: string; 
     items: SwotItem[]; 
-    bgColor: string; 
-    borderColor: string; 
+    headerBg: string; 
     icon: React.ReactNode;
   }) => (
-    <div className={`rounded-xl border-2 ${bgColor} ${borderColor} p-4 h-full`}>
-      <div className="flex items-center gap-2 mb-4">
+    <div className={`rounded-2xl border ${isDark ? 'theme-border theme-card' : 'bg-white border-slate-200'} overflow-hidden h-full flex flex-col`}> 
+      <div className={`px-5 py-4 border-b ${isDark ? 'theme-border' : 'border-slate-200'} flex items-center gap-3 ${headerBg}`}>
         {icon}
-        <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-          {title}
-        </h3>
-        <span className={`text-xs px-2 py-1 rounded-full ${isDark ? 'bg-white/20 text-white' : 'bg-black/10 text-slate-700'}`}>
-          {items.length} items
-        </span>
+        <h3 className={`text-base font-semibold ${isDark ? 'theme-text' : 'text-slate-900'}`}>{title}</h3>
+        <div className="ml-auto" />
       </div>
-      <div className="space-y-3">
+      <div className="p-4 space-y-3">
         {items.map((item, index) => (
           <div 
             key={index} 
-            className={`p-3 rounded-lg border ${getCategoryColor(item.category)} ${isDark ? 'bg-black/20' : 'bg-white/50'}`}
+            className={`p-3 rounded-xl border ${isDark ? 'theme-border theme-muted' : 'border-slate-200 bg-slate-50'}`}
           >
             <div className="flex items-start justify-between gap-2 mb-2">
-              <h4 className={`font-medium text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                {item.title}
-              </h4>
-              <span className={`text-xs px-2 py-1 rounded-full border ${getImpactColor(item.impact)}`}>
-                {item.impact}
-              </span>
+              <h4 className={`font-medium text-sm ${isDark ? 'theme-text' : 'text-slate-900'}`}>{item.title}</h4>
+              <span className={`text-[11px] px-2 py-0.5 rounded-full border ${getImpactColor(item.impact)}`}>{item.impact}</span>
             </div>
-            <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-              {item.description}
-            </p>
+            <p className={`text-sm leading-relaxed ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>{item.description}</p>
             <div className="mt-2">
-              <span className={`text-xs px-2 py-1 rounded-full ${isDark ? 'bg-white/10 text-slate-300' : 'bg-black/5 text-slate-500'}`}>
+              <span className={`text-[11px] px-2 py-0.5 rounded-full ${isDark ? 'bg-white/5 theme-text-muted border border-white/10' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
                 {item.category}
               </span>
             </div>
@@ -182,11 +170,10 @@ const SwotAnalysisVisualization: React.FC<SwotAnalysisVisualizationProps> = ({ d
           <SwotSection
             title="Strengths"
             items={data.strengths}
-            bgColor={isDark ? 'bg-green-900/20' : 'bg-green-50'}
-            borderColor={isDark ? 'border-green-500/50' : 'border-green-300'}
+            headerBg={isDark ? 'bg-green-400/10' : 'bg-green-50'}
             icon={
-              <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             }
           />
@@ -195,11 +182,10 @@ const SwotAnalysisVisualization: React.FC<SwotAnalysisVisualizationProps> = ({ d
           <SwotSection
             title="Weaknesses"
             items={data.weaknesses}
-            bgColor={isDark ? 'bg-red-900/20' : 'bg-red-50'}
-            borderColor={isDark ? 'border-red-500/50' : 'border-red-300'}
+            headerBg={isDark ? 'bg-red-400/10' : 'bg-red-50'}
             icon={
-              <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             }
           />
@@ -208,11 +194,10 @@ const SwotAnalysisVisualization: React.FC<SwotAnalysisVisualizationProps> = ({ d
           <SwotSection
             title="Opportunities"
             items={data.opportunities}
-            bgColor={isDark ? 'bg-blue-900/20' : 'bg-blue-50'}
-            borderColor={isDark ? 'border-blue-500/50' : 'border-blue-300'}
+            headerBg={isDark ? 'bg-blue-400/10' : 'bg-blue-50'}
             icon={
-              <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 17l6-6 4 4 7-7" />
               </svg>
             }
           />
@@ -221,11 +206,10 @@ const SwotAnalysisVisualization: React.FC<SwotAnalysisVisualizationProps> = ({ d
           <SwotSection
             title="Threats"
             items={data.threats}
-            bgColor={isDark ? 'bg-yellow-900/20' : 'bg-yellow-50'}
-            borderColor={isDark ? 'border-yellow-500/50' : 'border-yellow-300'}
+            headerBg={isDark ? 'bg-yellow-400/10' : 'bg-yellow-50'}
             icon={
-              <svg className="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              <svg className="w-5 h-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 19a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
               </svg>
             }
           />
@@ -233,7 +217,7 @@ const SwotAnalysisVisualization: React.FC<SwotAnalysisVisualizationProps> = ({ d
 
         {/* Summary Section */}
         {data.summary && (
-          <div className={`rounded-xl border-2 p-6 ${isDark ? 'bg-slate-800/50 border-slate-600' : 'bg-white border-slate-200'}`}>
+          <div className={`rounded-2xl border p-6 ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'} mb-6`}>
             <h3 className={`text-xl font-semibold mb-4 ${isDark ? 'text-white' : 'text-slate-900'}`}>
               Strategic Summary
             </h3>
@@ -281,6 +265,8 @@ const SwotAnalysisVisualization: React.FC<SwotAnalysisVisualizationProps> = ({ d
             </div>
           </div>
         )}
+        {/* Bottom spacer to ensure comfortable scroll past last table */}
+        <div className="h-10" />
       </div>
     </div>
   );

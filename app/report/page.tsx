@@ -212,18 +212,14 @@ function StudioCard({ title, subtitle, imageSrc, onClick, disabled, isGenerated 
     <button
       onClick={onClick}
       disabled={disabled || isLoading}
-      className={`group relative h-56 w-full overflow-hidden rounded-2xl border ${isDark ? 'theme-card theme-border hover:border-[color:var(--border-secondary)]' : 'border-slate-200 bg-white'} text-left shadow-sm transition focus:outline-none ${
+      className={`group relative w-full overflow-hidden rounded-2xl border ${isDark ? 'theme-card theme-border hover:border-[color:var(--border-secondary)]' : 'border-slate-200 bg-white'} text-left shadow-sm transition focus:outline-none ${
         disabled || isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md'
-      }`}
+      } h-44 md:h-48`}
     >
-      <div className="relative h-28 w-full">
-        <Image src={imageSrc} alt="" fill className="object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
-      </div>
-      <div className="flex h-[calc(100%-7rem)] flex-col justify-between px-3 pb-3 pt-2">
-        <div>
-          <div className={`text-sm font-semibold leading-tight ${isDark ? 'theme-text' : 'text-slate-800'}`}>{title}</div>
-          <div className={`mt-1 text-xs leading-tight ${isDark ? 'theme-text-muted' : 'text-slate-500'}`}>{subtitle}</div>
+      <div className={`flex h-full items-center px-4 py-4 ${isDark ? 'bg-transparent' : ''}`}>
+        <div className="flex flex-col gap-1">
+          <div className={`text-base font-semibold leading-tight ${isDark ? 'theme-text' : 'text-slate-800'}`}>{title}</div>
+          <div className={`text-xs leading-snug ${isDark ? 'theme-text-muted' : 'text-slate-500'}`}>{subtitle}</div>
         </div>
       </div>
       <div className={`pointer-events-none absolute right-3 top-3 inline-flex items-center rounded-full px-2 py-1 text-[10px] font-medium shadow-sm ring-1 backdrop-blur ${
@@ -1147,7 +1143,7 @@ function ReportConsoleContent() {
                     <div className="grid grid-cols-2 gap-4 auto-rows-[1fr]">
                       <StudioCard
                         title="Mind Map"
-                        subtitle="Visualize relationships between entities and themes."
+                        subtitle="Visualize relationships: entities and themes."
                         imageSrc="/features/mindmap.png"
                         onClick={() => handleStudioAction("Mind Map")}
                         disabled={isProcessing("Mind Map")}
@@ -1177,7 +1173,7 @@ function ReportConsoleContent() {
                     </div>
                     <div className="grid grid-cols-2 gap-4 auto-rows-[1fr]">
                       <StudioCard
-                        title="Generate Podcast"
+                        title="Podcast"
                         subtitle="Two-voice discussion based on the analysis."
                         imageSrc="/features/podcast.png"
                         onClick={() => handleStudioAction("Generate Podcast")}
@@ -1187,7 +1183,7 @@ function ReportConsoleContent() {
                         isLoading={isProcessing("Generate Podcast")}
                       />
                       <StudioCard
-                        title="Generate Audio Report"
+                        title="Audio Report"
                         subtitle="Narrated full report for listening on the go."
                         imageSrc="/features/audioreport.png"
                         onClick={() => handleStudioAction("Audio Report")}

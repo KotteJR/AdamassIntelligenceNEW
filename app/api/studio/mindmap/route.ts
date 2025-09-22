@@ -53,10 +53,10 @@ ${reportData.adamassSynthesisReport?.key_risks_and_mitigation?.map((risk: any) =
 Create a mind map JSON structure with:
 1. Central node: Company name
 2. Main branches: Architecture, Security, Strategic Outlook, Key Risks, Recommendations
-3. Sub-nodes for specific findings, scores, and details
-4. Connection types: strength, weakness, opportunity, threat, neutral
-5. Node colors based on sentiment: green (positive), red (negative), yellow (caution), blue (neutral)
-6. Include numerical scores where available
+3. Sub-nodes for specific findings, scores, and details. Every node EXCEPT the central node MUST include a valid "parentId" that points to an existing node to form a tree.
+4. Include cross-branch links in the connections array to show relationships (e.g., a risk linked to a recommendation). Allowed connection types: "supports" | "mitigates" | "causes" | "related".
+5. Each connection must reference existing node ids and include a numeric strength between 0.2 and 1.
+6. Node colors based on sentiment: green (positive), red (negative), yellow (caution), blue (neutral). Include numerical scores where available
 
 Return ONLY valid JSON in this exact format:
 {
@@ -92,7 +92,7 @@ Return ONLY valid JSON in this exact format:
   ]
 }
 
-Make the mind map comprehensive with 15-25 nodes total, showing clear relationships between analysis areas, findings, and strategic implications.
+Make the mind map comprehensive with 25-35 nodes total, showing clear relationships between analysis areas, findings, and strategic implications. Ensure at least 12 cross-branch connections in the connections array.
 
 IMPORTANT: Return ONLY valid, complete JSON. No markdown, no explanations, just the JSON object.`;
 

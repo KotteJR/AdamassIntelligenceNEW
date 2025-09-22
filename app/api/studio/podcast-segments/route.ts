@@ -5,40 +5,35 @@ import OpenAI from 'openai';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY as string;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY as string;
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
-// Professional conversational voices for podcast
-const HOST_VOICE_ID = 'EXAVITQu4vr4xnSDxMaL'; // Bella - professional female host
-const GUEST_VOICE_ID = 'JBFqnCBsd6RMkjVDRZzb'; // George - more natural male voice
+// OpenAI TTS config (choose voices per role)
+const OPENAI_TTS_MODEL = 'gpt-4o-mini-tts';
+const HOST_VOICE = process.env.OPENAI_TTS_HOST_VOICE || 'alloy';
+const GUEST_VOICE = process.env.OPENAI_TTS_GUEST_VOICE || 'verse';
 
-async function generateAudioWithRetry(text: string, voiceId: string, maxAttempts = 3) {
+async function generateAudioWithRetry(text: string, voiceName: string, maxAttempts = 3) {
   let attempt = 0;
   
   while (attempt < maxAttempts) {
     attempt++;
-    console.log(`[TTS] Attempt ${attempt}/${maxAttempts} for voice ${voiceId}...`);
+    console.log(`[TTS] Attempt ${attempt}/${maxAttempts} for voice ${voiceName}...`);
     
     try {
-      const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + voiceId, {
+      const response = await fetch('https://api.openai.com/v1/audio/speech', {
         method: 'POST',
         headers: {
-          'Accept': 'audio/mpeg',
-          'Content-Type': 'application/json',
-          'xi-api-key': ELEVENLABS_API_KEY,
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          text: text,
-          model_id: 'eleven_multilingual_v2',
-          voice_settings: {
-            stability: 0.5,
-            similarity_boost: 0.8,
-            style: 0.0,
-            use_speaker_boost: true
-          }
-        }),
+          model: OPENAI_TTS_MODEL,
+          voice: voiceName,
+          input: text,
+          format: 'mp3'
+        })
       });
 
       if (response.ok) {
@@ -63,7 +58,7 @@ async function generateAudioWithRetry(text: string, voiceId: string, maxAttempts
     } catch (fetchError) {
       console.error(`[TTS] Network error (attempt ${attempt}):`, fetchError);
       if (attempt === maxAttempts) {
-        throw new Error('Network error connecting to ElevenLabs TTS');
+        throw new Error('Network error connecting to OpenAI TTS');
       }
       await new Promise(resolve => setTimeout(resolve, 3000));
     }
@@ -85,46 +80,46 @@ export async function POST(request: NextRequest) {
 
     console.log('[Podcast Segments] Generating podcast script with OpenAI...');
 
-    const scriptPrompt = `Create a professional business podcast script about ${reportData.companyAlias || 'this company'} based on the analysis data provided. 
+    const scriptPrompt = `Create a concise, professional analysis podcast script about ${reportData.companyAlias || 'this company'} using the data below.
 
-ANALYSIS DATA:
-- Company: ${reportData.companyAlias || 'Unknown'}
+GOAL:
+- Direct, no fluff. Executive tone. No personal names.
+- Start with: "This is the Adamass Analysis Podcast. We deliver clear, decision-grade insights in minutes."
+- Speakers are labeled HOST and GUEST only. GUEST is the expert analyst.
+- Focus on the company: key facts, strengths, risks, outlook, and clear takeaways.
+- Avoid repetition, jokes, filler, or casual chit-chat.
+- Target length: 250–350 words in total.
+
+DATA:
 - Architecture Score: ${reportData.architecture?.overall_score || 'N/A'}/10
 - Security Score: ${reportData.security?.overall_score || 'N/A'}/10
 - Confidence Score: ${reportData.adamassSynthesisReport?.overall_assessment?.confidence_score || 'N/A'}/10
-- Overall Verdict: ${reportData.adamassSynthesisReport?.overall_assessment?.verdict || 'Not available'}
+- Verdict: ${reportData.adamassSynthesisReport?.overall_assessment?.verdict || 'Not available'}
+- Top Strengths: ${reportData.architecture?.main_good?.slice(0, 3)?.join('; ') || 'Not available'}
+- Key Risks: ${reportData.architecture?.main_risks?.slice(0, 3)?.join('; ') || 'Not available'}
+- Strategic Recommendations: ${reportData.adamassSynthesisReport?.strategic_recommendations?.slice(0, 3)?.map((r:any)=>`${r.action_title}`).join('; ') || 'Not available'}
 
-KEY STRENGTHS:
-${reportData.architecture?.main_good?.slice(0, 3)?.map((s: string) => `- ${s}`).join('\n') || 'Not available'}
+STRUCTURE:
+1) HOST: Opening line as instructed, then one-sentence summary of the company situation.
+2) HOST: Snapshot of scores and verdict in one tight sentence.
+3) GUEST: 2–3 crisp strengths (single compact sentence).
+4) GUEST: 2–3 crisp risks (single compact sentence).
+5) GUEST: 2–3 strategic priorities (single compact sentence).
+6) HOST: Close with a single-sentence outlook.
 
-CRITICAL RISKS:
-${reportData.architecture?.main_risks?.slice(0, 3)?.map((r: string) => `- ${r}`).join('\n') || 'Not available'}
-
-TOP RECOMMENDATIONS:
-${reportData.adamassSynthesisReport?.strategic_recommendations?.slice(0, 2)?.map((rec: any) => `- ${rec.action_title}: ${rec.description}`).join('\n') || 'Not available'}
-
-INSTRUCTIONS:
-- Create a conversational podcast between HOST (professional female) and GUEST (expert analyst male)
-- Target 3 minutes total (about 450-500 words)
-- Make it engaging and natural dialogue
-- Focus on strategic implications and actionable insights
-- Keep segments short and punchy for good pacing
-
-FORMAT your response as JSON with this exact structure:
+FORMAT JSON EXACTLY AS:
 {
   "segments": [
-    {
-      "speaker": "HOST",
-      "text": "Welcome to Business Analysis Deep Dive..."
-    },
-    {
-      "speaker": "GUEST", 
-      "text": "Thanks for having me..."
-    }
+    { "speaker": "HOST", "text": "..." },
+    { "speaker": "HOST", "text": "..." },
+    { "speaker": "GUEST", "text": "..." },
+    { "speaker": "GUEST", "text": "..." },
+    { "speaker": "GUEST", "text": "..." },
+    { "speaker": "HOST", "text": "..." }
   ]
 }
 
-Make 8-12 segments total, alternating speakers naturally.`;
+Strictly follow the structure and keep it concise.`;
 
     const scriptResponse = await openai.chat.completions.create({
       model: 'gpt-4-turbo-preview',
@@ -204,12 +199,12 @@ Make 8-12 segments total, alternating speakers naturally.`;
     const audioSegments = [];
     for (let i = 0; i < scriptData.segments.length; i++) {
       const segment = scriptData.segments[i];
-      const voiceId = segment.speaker === 'HOST' ? HOST_VOICE_ID : GUEST_VOICE_ID;
+      const voiceName = segment.speaker === 'HOST' ? HOST_VOICE : GUEST_VOICE;
       
       console.log(`[Podcast Segments] Generating audio for segment ${i + 1}/${scriptData.segments.length} (${segment.speaker})...`);
       
       try {
-        const audioBase64 = await generateAudioWithRetry(segment.text, voiceId);
+        const audioBase64 = await generateAudioWithRetry(segment.text, voiceName);
         audioSegments.push({
           speaker: segment.speaker,
           text: segment.text,

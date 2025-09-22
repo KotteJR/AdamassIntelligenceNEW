@@ -156,7 +156,7 @@ const generateMindMapLayout = (data: MindMapData): { nodes: Node[]; edges: Edge[
   const detailNodes = data.nodes.filter(node => node.parentId !== data.central.id);
 
   // Position branch nodes in a circle around the central node
-  const radius = 300;
+  const radius = 320;
   const angleStep = (2 * Math.PI) / branchNodes.length;
 
   branchNodes.forEach((node, index) => {
@@ -204,7 +204,7 @@ const generateMindMapLayout = (data: MindMapData): { nodes: Node[]; edges: Edge[
     const branchX = Math.cos(branchAngle) * radius;
     const branchY = Math.sin(branchAngle) * radius;
 
-    const childRadius = 150;
+    const childRadius = 180;
     const childAngleStep = Math.PI / (childNodes.length + 1);
     const startAngle = branchAngle - Math.PI / 2;
 

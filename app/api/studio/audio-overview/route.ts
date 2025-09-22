@@ -12,9 +12,9 @@ if (!OPENAI_API_KEY) {
 }
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
-// ElevenLabs configuration from env
-const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY as string;
-const PROFESSIONAL_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'pNInz6obpgDQGcFmaJgB';
+// OpenAI TTS config
+const OPENAI_TTS_MODEL = 'gpt-4o-mini-tts';
+const OPENAI_TTS_VOICE = process.env.OPENAI_TTS_VOICE || 'alloy';
 
 export async function POST(request: NextRequest) {
   try {
@@ -82,75 +82,25 @@ Format as a single, flowing script without headers or bullet points.`;
       throw new Error('Failed to generate script');
     }
 
-    console.log('[Audio Overview] Script generated, sending to ElevenLabs...');
+    console.log('[Audio Overview] Script generated, sending to OpenAI TTS...');
 
-    // Step 2: Convert script to audio using ElevenLabs with retry logic
-    let ttsResponse;
-    let attempt = 0;
-    const maxAttempts = 3;
-    
-    while (attempt < maxAttempts) {
-      attempt++;
-      console.log(`[Audio Overview] Attempt ${attempt}/${maxAttempts}...`);
-      
-      try {
-        ttsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${PROFESSIONAL_VOICE_ID}`, {
-          method: 'POST',
-          headers: {
-            'Accept': 'audio/mpeg',
-            'Content-Type': 'application/json',
-            'xi-api-key': ELEVENLABS_API_KEY,
-          },
-          body: JSON.stringify({
-            text: script,
-            model_id: 'eleven_monolingual_v1',
-            voice_settings: {
-              stability: 0.5,
-              similarity_boost: 0.5,
-              style: 0.2,
-              use_speaker_boost: true
-            }
-          }),
-        });
-
-        if (ttsResponse.ok) {
-          break; // Success, exit retry loop
-        }
-
-        // Handle specific error codes
-        const errorText = await ttsResponse.text();
-        console.error(`[Audio Overview] ElevenLabs error (attempt ${attempt}):`, errorText);
-        
-        if (ttsResponse.status === 429) {
-          // Rate limit - wait before retry
-          const waitTime = Math.pow(2, attempt) * 1000; // Exponential backoff
-          console.log(`[Audio Overview] Rate limited, waiting ${waitTime}ms before retry...`);
-          await new Promise(resolve => setTimeout(resolve, waitTime));
-          continue;
-        } else if (ttsResponse.status === 401) {
-          // Invalid API key - don't retry
-          throw new Error('Invalid ElevenLabs API key');
-        } else if (ttsResponse.status >= 500) {
-          // Server error - retry
-          console.log(`[Audio Overview] Server error ${ttsResponse.status}, retrying...`);
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          continue;
-        } else {
-          // Other errors - don't retry
-          throw new Error(`ElevenLabs API error: ${ttsResponse.status} - ${errorText}`);
-        }
-        
-      } catch (fetchError) {
-        console.error(`[Audio Overview] Network error (attempt ${attempt}):`, fetchError);
-        if (attempt === maxAttempts) {
-          throw new Error('Network error connecting to ElevenLabs');
-        }
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
-    }
-
-    if (!ttsResponse || !ttsResponse.ok) {
-      throw new Error('Failed to generate audio after multiple attempts. ElevenLabs may be experiencing high traffic.');
+    // Step 2: Convert script to audio using OpenAI TTS
+    const ttsResponse = await fetch('https://api.openai.com/v1/audio/speech', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: OPENAI_TTS_MODEL,
+        voice: OPENAI_TTS_VOICE,
+        input: script,
+        format: 'mp3'
+      })
+    });
+    if (!ttsResponse.ok) {
+      const errorText = await ttsResponse.text();
+      throw new Error(`OpenAI TTS error: ${ttsResponse.status} - ${errorText}`);
     }
 
     console.log('[Audio Overview] Audio generated successfully');
