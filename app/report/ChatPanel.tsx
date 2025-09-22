@@ -18,7 +18,7 @@ interface ChatPanelProps {
 export default function ChatPanel({ showHeader = false, reportData }: ChatPanelProps) {
   const { isDark } = useTheme();
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: "assistant", content: "Ask questions about the analysis or request follow‑ups here." },
+    { role: "assistant", content: "Ask questions about the analysis or request follow‑ups here!" },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
