@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
         error: 'Rate limit exceeded. Try again later.' 
       }, { status: 429 });
     }
-    const { email, isAdmin } = await req.json();
+    const { email, isAdmin: makeAdmin } = await req.json();
 
     if (!email) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       .from('user_profiles')
       .upsert({
         email,
-        is_admin: isAdmin,
+        is_admin: makeAdmin,
         updated_at: new Date().toISOString()
       }, {
         onConflict: 'email'
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      message: `Admin access ${isAdmin ? 'granted' : 'revoked'} for ${email}` 
+      message: `Admin access ${makeAdmin ? 'granted' : 'revoked'} for ${email}` 
     });
 
   } catch (error: any) {
