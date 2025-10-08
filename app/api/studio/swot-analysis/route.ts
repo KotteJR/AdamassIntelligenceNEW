@@ -30,7 +30,8 @@ Company: ${reportData.companyAlias || 'Unknown Company'}
 
 ANALYSIS SCORES:
 - Architecture: ${reportData.architecture?.overall_score || 'N/A'}/10
-- Security: ${reportData.security?.overall_score || 'N/A'}/10  
+- Security: ${reportData.security?.overall_score || 'N/A'}/10
+- Financial: ${reportData.financials?.overall_score || 'N/A'}/10
 - Adamass Confidence: ${reportData.adamassSynthesisReport?.overall_assessment?.confidence_score || 'N/A'}/10
 
 EXECUTIVE SUMMARY:
@@ -44,6 +45,36 @@ SECURITY:
 Strengths: ${reportData.security?.main_good?.join(', ') || 'Not available'}
 Risks: ${reportData.security?.main_risks?.join(', ') || 'Not available'}
 
+FINANCIAL ANALYSIS:
+Overall Financial Health: ${reportData.financials?.overall_score || 'N/A'}/10
+Strengths: ${reportData.financials?.main_good?.join(', ') || 'Not available'}
+Risks: ${reportData.financials?.main_risks?.join(', ') || 'Not available'}
+
+CAPITAL MARKETS ANALYSIS:
+Market Confidence Index: ${reportData.financials?.capital_markets_analysis?.market_confidence_index || 'N/A'}/100
+Trend Alignment: ${reportData.financials?.capital_markets_analysis?.alignment || 'N/A'}
+Recent Performance: ${reportData.financials?.market_performance?.stock_performance_summary || 'Not available'}
+
+FINANCIAL FUNDAMENTALS:
+${reportData.financials?.financial_fundamentals ? `
+Revenue Growth YoY: ${reportData.financials.financial_fundamentals.key_metrics?.revenue_growth_yoy || 'N/A'}%
+Net Income Growth: ${reportData.financials.financial_fundamentals.key_metrics?.net_income_growth_yoy || 'N/A'}%
+EBITDA Margin: ${reportData.financials.financial_fundamentals.key_metrics?.ebitda_margin || 'N/A'}%
+ROE: ${reportData.financials.financial_fundamentals.key_metrics?.roe || 'N/A'}%
+Debt to Equity: ${reportData.financials.financial_fundamentals.key_metrics?.debt_to_equity || 'N/A'}
+Profitability Trend: ${reportData.financials.financial_fundamentals.trend_analysis?.profitability?.substring(0, 200) || 'N/A'}
+Liquidity Analysis: ${reportData.financials.financial_fundamentals.trend_analysis?.liquidity?.substring(0, 200) || 'N/A'}
+` : 'Financial fundamentals not available'}
+
+RECENT MARKET NEWS & SENTIMENT:
+${reportData.companyIntelligence?.recent_market_news ? `
+Market Sentiment Index: ${reportData.companyIntelligence.recent_market_news.market_sentiment_index}/100 (${reportData.companyIntelligence.recent_market_news.summary_sentiment})
+Key Themes: ${reportData.companyIntelligence.recent_market_news.themes?.join(', ') || 'N/A'}
+Risk Signals: ${reportData.companyIntelligence.recent_market_news.risk_signals?.join('; ') || 'N/A'}
+Opportunity Signals: ${reportData.companyIntelligence.recent_market_news.opportunity_signals?.join('; ') || 'N/A'}
+Market Impact: ${reportData.companyIntelligence.recent_market_news.analysis?.market_impact?.substring(0, 200) || 'N/A'}
+` : 'Market news not available'}
+
 STRATEGIC RECOMMENDATIONS:
 ${reportData.adamassSynthesisReport?.strategic_recommendations?.map((rec: any) => `${rec.action_title} (${rec.priority}): ${rec.description}`)?.join('\n') || 'Not available'}
 
@@ -53,13 +84,17 @@ ${reportData.adamassSynthesisReport?.key_risks_and_mitigation?.map((risk: any) =
 COMPANY OVERVIEW:
 ${reportData.companyIntelligence?.company_overview?.overview || 'Not available'}
 
-Create a comprehensive SWOT analysis with:
-1. STRENGTHS: Internal positive factors, competitive advantages, strong capabilities
-2. WEAKNESSES: Internal negative factors, areas for improvement, resource limitations
-3. OPPORTUNITIES: External positive factors, market trends, potential growth areas
-4. THREATS: External negative factors, risks, competitive pressures
+COMPETITIVE LANDSCAPE:
+Main Competitors: ${reportData.companyIntelligence?.company_overview?.main_competitors?.join(', ') || 'Not available'}
+Industry: ${reportData.companyIntelligence?.company_overview?.industry || 'Not available'}
 
-For each category, provide 4-6 specific, actionable items with brief descriptions.
+Create a comprehensive SWOT analysis with:
+1. STRENGTHS: Internal positive factors including technical capabilities, financial health, market position, operational excellence, brand value
+2. WEAKNESSES: Internal negative factors including technical debt, financial constraints, security vulnerabilities, operational inefficiencies
+3. OPPORTUNITIES: External positive factors including market trends, emerging technologies, expansion potential, strategic partnerships, favorable market conditions
+4. THREATS: External negative factors including competitive pressures, market risks, regulatory challenges, economic headwinds, technological disruption
+
+For each category, provide 8-12 specific, detailed, actionable items with comprehensive descriptions. Include both strategic and tactical insights incorporating financial metrics, market sentiment, competitive positioning, and operational considerations.
 
 Return ONLY valid JSON in this exact format:
 {
@@ -122,7 +157,7 @@ IMPORTANT: Return ONLY valid, complete JSON. No markdown, no explanations, just 
           content: swotPrompt
         }
       ],
-      max_tokens: 2000,
+      max_tokens: 4000,
       temperature: 0.3,
     });
 

@@ -24,30 +24,67 @@ export async function POST(request: NextRequest) {
     const sourceContent = `Business Analysis Report: ${reportData.companyAlias || 'Company Analysis'}
 
 EXECUTIVE SUMMARY:
-${reportData.adamassSynthesisReport?.executive_summary || 'Comprehensive business analysis covering architecture, security, and strategic positioning for informed decision-making.'}
+${reportData.adamassSynthesisReport?.executive_summary || 'Comprehensive business analysis covering architecture, security, financial performance, market sentiment, and strategic positioning for informed decision-making.'}
 
 ANALYSIS OVERVIEW:
 Architecture Score: ${reportData.architecture?.overall_score || 'N/A'}/10
 Security Score: ${reportData.security?.overall_score || 'N/A'}/10
+Financial Score: ${reportData.financials?.overall_score || 'N/A'}/10
 Adamass Confidence Score: ${reportData.adamassSynthesisReport?.overall_assessment?.confidence_score || 'N/A'}/10
 
 OVERALL VERDICT: 
 ${reportData.adamassSynthesisReport?.overall_assessment?.verdict || 'Strategic analysis reveals key opportunities and challenges for sustainable business growth.'}
 
 KEY STRENGTHS AND ADVANTAGES:
-${reportData.architecture?.main_good?.join('\n- ') || 'Strong technical foundation, market positioning, and competitive advantages in the industry.'}
+Architecture: ${reportData.architecture?.main_good?.join('; ') || 'Strong technical foundation'}
+Security: ${reportData.security?.main_good?.join('; ') || 'Robust security measures'}
+Financial: ${reportData.financials?.main_good?.join('; ') || 'Solid financial position'}
 
 CRITICAL RISKS AND AREAS FOR IMPROVEMENT:
-${reportData.architecture?.main_risks?.join('\n- ') || 'Technical debt, security vulnerabilities, and operational inefficiencies require immediate attention.'}
+Architecture Risks: ${reportData.architecture?.main_risks?.join('; ') || 'Technical debt requires attention'}
+Security Risks: ${reportData.security?.main_risks?.join('; ') || 'Security vulnerabilities identified'}
+Financial Risks: ${reportData.financials?.main_risks?.join('; ') || 'Financial challenges present'}
+
+FINANCIAL PERFORMANCE IN DETAIL:
+Market Confidence Index: ${reportData.financials?.capital_markets_analysis?.market_confidence_index || 'N/A'}/100 - ${reportData.financials?.capital_markets_analysis?.alignment || 'Neutral'} trend alignment
+Stock Performance: ${reportData.financials?.market_performance?.stock_performance_summary || 'Market performance data not available'}
+Revenue Growth: ${reportData.financials?.financial_fundamentals?.key_metrics?.revenue_growth_yoy || 'N/A'}% year-over-year
+Net Income Growth: ${reportData.financials?.financial_fundamentals?.key_metrics?.net_income_growth_yoy || 'N/A'}%
+EBITDA Margin: ${reportData.financials?.financial_fundamentals?.key_metrics?.ebitda_margin || 'N/A'}%
+Return on Equity: ${reportData.financials?.financial_fundamentals?.key_metrics?.roe || 'N/A'}%
+Debt to Equity Ratio: ${reportData.financials?.financial_fundamentals?.key_metrics?.debt_to_equity || 'N/A'}
+Current Ratio: ${reportData.financials?.financial_fundamentals?.key_metrics?.current_ratio || 'N/A'}
+
+Profitability Trend: ${reportData.financials?.financial_fundamentals?.trend_analysis?.profitability?.substring(0, 300) || 'Profitability analysis not available'}
+
+Liquidity Position: ${reportData.financials?.financial_fundamentals?.trend_analysis?.liquidity?.substring(0, 300) || 'Liquidity analysis not available'}
+
+MARKET SENTIMENT AND NEWS ANALYSIS:
+Market Sentiment Index: ${reportData.companyIntelligence?.recent_market_news?.market_sentiment_index || 'N/A'}/100 - Overall sentiment is ${reportData.companyIntelligence?.recent_market_news?.summary_sentiment || 'neutral'}
+Key Market Themes: ${reportData.companyIntelligence?.recent_market_news?.themes?.join(', ') || 'Market themes not available'}
+
+Risk Signals from Market: ${reportData.companyIntelligence?.recent_market_news?.risk_signals?.join('; ') || 'No specific risk signals identified'}
+
+Opportunity Signals: ${reportData.companyIntelligence?.recent_market_news?.opportunity_signals?.join('; ') || 'Market opportunities to be evaluated'}
+
+Market Impact Analysis: ${reportData.companyIntelligence?.recent_market_news?.analysis?.market_impact || 'Market impact assessment not available'}
+
+Strategic Implications: ${reportData.companyIntelligence?.recent_market_news?.analysis?.strategic_implications?.substring(0, 300) || 'Strategic implications being evaluated'}
 
 STRATEGIC RECOMMENDATIONS:
-${reportData.adamassSynthesisReport?.strategic_recommendations?.slice(0, 3)?.map((rec: any) => `${rec.action_title}: ${rec.description}`)?.join('\n\n') || 'Infrastructure modernization, security improvements, and strategic market positioning initiatives recommended.'}
+${reportData.adamassSynthesisReport?.strategic_recommendations?.slice(0, 5)?.map((rec: any) => `${rec.action_title} (Priority: ${rec.priority}): ${rec.description}${rec.expected_outcome ? '. Expected outcome: ' + rec.expected_outcome : ''}`)?.join('\n\n') || 'Infrastructure modernization, security improvements, financial optimization, and strategic market positioning initiatives recommended.'}
 
-COMPANY BACKGROUND:
+KEY RISKS AND MITIGATION STRATEGIES:
+${reportData.adamassSynthesisReport?.key_risks_and_mitigation?.slice(0, 5)?.map((risk: any) => `${risk.risk} (${risk.severity} severity): Mitigation - ${risk.mitigation}`)?.join('\n\n') || 'Risk mitigation strategies being developed'}
+
+COMPANY BACKGROUND AND COMPETITIVE POSITION:
 ${reportData.companyIntelligence?.company_overview?.overview || 'A technology company operating in a competitive market with significant potential for growth and expansion.'}
 
-MARKET IMPLICATIONS:
-The analysis reveals important insights about the company's technical capabilities, security posture, and strategic positioning. These findings have direct implications for investment decisions, operational planning, and long-term growth strategies.`;
+Industry: ${reportData.companyIntelligence?.company_overview?.industry || 'Technology sector'}
+Main Competitors: ${reportData.companyIntelligence?.company_overview?.main_competitors?.join(', ') || 'Competitive landscape being assessed'}
+
+MARKET IMPLICATIONS AND INVESTMENT CONSIDERATIONS:
+The comprehensive analysis reveals important insights about the company's technical capabilities, security posture, financial health, market sentiment, and strategic positioning. The financial fundamentals show ${reportData.financials?.financial_fundamentals?.key_metrics?.revenue_growth_yoy > 0 ? 'positive revenue growth' : 'revenue challenges'}, with ${reportData.financials?.capital_markets_analysis?.alignment === 'Aligned' ? 'favorable' : reportData.financials?.capital_markets_analysis?.alignment === 'Divergent' ? 'divergent' : 'neutral'} market trend alignment. Market sentiment is currently ${reportData.companyIntelligence?.recent_market_news?.summary_sentiment || 'neutral'}, which ${reportData.companyIntelligence?.recent_market_news?.summary_sentiment === 'positive' ? 'supports' : reportData.companyIntelligence?.recent_market_news?.summary_sentiment === 'negative' ? 'challenges' : 'maintains'} the investment thesis. These findings have direct implications for investment decisions, operational planning, capital allocation, and long-term growth strategies.`;
 
     console.log('[Podcast] Sending content to ElevenLabs Studio for podcast generation...');
 

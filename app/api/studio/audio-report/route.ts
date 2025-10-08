@@ -28,20 +28,48 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 1: Consultant-style sections to allow per-topic playback
-    const scriptPrompt = `Create a consultant-style executive audio report for ${reportData.companyAlias || 'the company'}.
+    const scriptPrompt = `Create a comprehensive consultant-style executive audio report for ${reportData.companyAlias || 'the company'}.
 Return ONLY JSON in the form {"sections":[{"title":string,"text":string}...]}. 
-Tone: senior consultant, analytical, decisive, highlights Why/So-What. 
-Aim for 5-8 sections such as: Introduction, Scores & Executive View, Architecture Deep-Dive, Security Deep-Dive, Strategic Recommendations, Key Risks & Mitigation, Closing Outlook.
+Tone: senior consultant, analytical, decisive, data-driven, highlights Why/So-What with specific metrics and insights. 
+Aim for 10-14 sections such as: Introduction, Executive Overview & Scores, Architecture Deep-Dive, Security Deep-Dive, Financial Performance Analysis, Capital Markets Assessment, Market Sentiment & News Analysis, Company Intelligence, Strategic Recommendations, Key Risks & Mitigation, Opportunities & Growth Potential, Closing Outlook.
+
 Use these inputs:
 Executive summary: ${reportData.adamassSynthesisReport?.executive_summary || 'NA'}
-Scores: Architecture ${reportData.architecture?.overall_score || 'NA'}, Security ${reportData.security?.overall_score || 'NA'}, Confidence ${reportData.adamassSynthesisReport?.overall_assessment?.confidence_score || 'NA'}
+Scores: Architecture ${reportData.architecture?.overall_score || 'NA'}/10, Security ${reportData.security?.overall_score || 'NA'}/10, Financial ${reportData.financials?.overall_score || 'NA'}/10, Confidence ${reportData.adamassSynthesisReport?.overall_assessment?.confidence_score || 'NA'}/10
+
 Architecture strengths: ${reportData.architecture?.main_good?.join('; ') || 'NA'}
 Architecture risks: ${reportData.architecture?.main_risks?.join('; ') || 'NA'}
+
 Security strengths: ${reportData.security?.main_good?.join('; ') || 'NA'}
 Security risks: ${reportData.security?.main_risks?.join('; ') || 'NA'}
-Recommendations: ${reportData.adamassSynthesisReport?.strategic_recommendations?.map((r:any)=>`${r.action_title}: ${r.description}`).join('; ') || 'NA'}
-Key risks: ${reportData.adamassSynthesisReport?.key_risks_and_mitigation?.map((r:any)=>`${r.risk} (${r.severity})`).join('; ') || 'NA'}
+
+Financial Analysis:
+Overall financial health: ${reportData.financials?.overall_score || 'NA'}/10
+Market confidence index: ${reportData.financials?.capital_markets_analysis?.market_confidence_index || 'NA'}/100
+Trend alignment: ${reportData.financials?.capital_markets_analysis?.alignment || 'NA'}
+Stock performance: ${reportData.financials?.market_performance?.stock_performance_summary || 'NA'}
+Revenue growth YoY: ${reportData.financials?.financial_fundamentals?.key_metrics?.revenue_growth_yoy || 'NA'}%
+Net income growth: ${reportData.financials?.financial_fundamentals?.key_metrics?.net_income_growth_yoy || 'NA'}%
+EBITDA margin: ${reportData.financials?.financial_fundamentals?.key_metrics?.ebitda_margin || 'NA'}%
+ROE: ${reportData.financials?.financial_fundamentals?.key_metrics?.roe || 'NA'}%
+Debt to equity: ${reportData.financials?.financial_fundamentals?.key_metrics?.debt_to_equity || 'NA'}
+Profitability trend: ${reportData.financials?.financial_fundamentals?.trend_analysis?.profitability?.substring(0, 200) || 'NA'}
+Liquidity analysis: ${reportData.financials?.financial_fundamentals?.trend_analysis?.liquidity?.substring(0, 200) || 'NA'}
+Financial strengths: ${reportData.financials?.main_good?.join('; ') || 'NA'}
+Financial risks: ${reportData.financials?.main_risks?.join('; ') || 'NA'}
+
+Market Sentiment & News:
+Sentiment index: ${reportData.companyIntelligence?.recent_market_news?.market_sentiment_index || 'NA'}/100 (${reportData.companyIntelligence?.recent_market_news?.summary_sentiment || 'NA'})
+Key themes: ${reportData.companyIntelligence?.recent_market_news?.themes?.join(', ') || 'NA'}
+Risk signals: ${reportData.companyIntelligence?.recent_market_news?.risk_signals?.join('; ') || 'NA'}
+Opportunity signals: ${reportData.companyIntelligence?.recent_market_news?.opportunity_signals?.join('; ') || 'NA'}
+Market impact: ${reportData.companyIntelligence?.recent_market_news?.analysis?.market_impact || 'NA'}
+
+Strategic Recommendations: ${reportData.adamassSynthesisReport?.strategic_recommendations?.map((r:any)=>`${r.action_title} (${r.priority}): ${r.description}`).join('; ') || 'NA'}
+Key risks: ${reportData.adamassSynthesisReport?.key_risks_and_mitigation?.map((r:any)=>`${r.risk} (${r.severity}): ${r.mitigation}`).join('; ') || 'NA'}
 Company overview: ${reportData.companyIntelligence?.company_overview?.overview || 'NA'}
+Industry: ${reportData.companyIntelligence?.company_overview?.industry || 'NA'}
+Main competitors: ${reportData.companyIntelligence?.company_overview?.main_competitors?.join(', ') || 'NA'}
 `;
 
     console.log('[Audio Report] Generating sections with OpenAI...');
@@ -51,7 +79,7 @@ Company overview: ${reportData.companyIntelligence?.company_overview?.overview |
         { role: 'system', content: 'Return ONLY valid JSON. You are a senior consultant producing an executive audio briefing segmented into titled sections.' },
         { role: 'user', content: scriptPrompt },
       ],
-      max_tokens: 1400,
+      max_tokens: 3000,
       temperature: 0.4,
     });
     const raw = scriptResponse.choices[0]?.message?.content || '';

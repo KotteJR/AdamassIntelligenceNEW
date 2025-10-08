@@ -75,7 +75,18 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { companyAlias, legalAlias, websiteUrl, countryOfIncorporation, jobId } = body;
+    const { 
+      companyAlias, 
+      legalAlias, 
+      websiteUrl, 
+      countryOfIncorporation, 
+      jobId,
+      preferredHostUrl,
+      openApiUrl,
+      repositoryUrls,
+      isPublicCompany,
+      tickerSymbol
+    } = body;
 
     // Debug the extracted values
     console.log(`[API /initiate-analysis] Raw request body:`, body);
@@ -85,6 +96,11 @@ export async function POST(req: Request) {
     console.log(`[API /initiate-analysis] - companyAlias: "${companyAlias}" (type: ${typeof companyAlias})`);
     console.log(`[API /initiate-analysis] - legalAlias: "${legalAlias}" (type: ${typeof legalAlias})`);
     console.log(`[API /initiate-analysis] - countryOfIncorporation: "${countryOfIncorporation}" (type: ${typeof countryOfIncorporation})`);
+    console.log(`[API /initiate-analysis] - preferredHostUrl: "${preferredHostUrl}" (type: ${typeof preferredHostUrl})`);
+    console.log(`[API /initiate-analysis] - openApiUrl: "${openApiUrl}" (type: ${typeof openApiUrl})`);
+    console.log(`[API /initiate-analysis] - repositoryUrls:`, Array.isArray(repositoryUrls) ? repositoryUrls : repositoryUrls ? [repositoryUrls] : []);
+    console.log(`[API /initiate-analysis] - isPublicCompany: ${isPublicCompany}`);
+    console.log(`[API /initiate-analysis] - tickerSymbol: "${tickerSymbol}"`);
 
     if (!companyAlias || !websiteUrl || !jobId) {
       return NextResponse.json({ error: 'Missing required fields: companyAlias, websiteUrl, and jobId are required.' }, { status: 400 });
@@ -96,13 +112,24 @@ export async function POST(req: Request) {
 
     // n8n is putting our data in body automatically, so let's send it flat
     // but the expressions need to reference it correctly
-    const payload = {
+    const payload: Record<string, any> = {
       job_id: jobId,
       url: websiteUrl,
       company_name: companyAlias,
       legal_name: legalAlias || companyAlias,
       country: countryOfIncorporation || 'Unknown'
     };
+
+    // Include optional fields when provided
+    if (preferredHostUrl) payload.preferred_host_url = preferredHostUrl;
+    if (openApiUrl) payload.openapi_url = openApiUrl;
+    if (typeof isPublicCompany === 'boolean') payload.is_public_company = isPublicCompany;
+    if (tickerSymbol) payload.ticker_symbol = tickerSymbol;
+    if (repositoryUrls) {
+      const repos = Array.isArray(repositoryUrls) ? repositoryUrls : [repositoryUrls];
+      const cleaned = repos.map((r) => (typeof r === 'string' ? r.trim() : '')).filter(Boolean);
+      if (cleaned.length > 0) payload.repository_urls = cleaned;
+    }
 
     console.log(`[API /initiate-analysis] Triggering n8n workflow for job_id: ${jobId} at URL: ${n8nUrl.toString()}`);
     console.log(`[API /initiate-analysis] Payload:`, JSON.stringify(payload, null, 2));

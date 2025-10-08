@@ -18,6 +18,210 @@ const getOpenAIPrompt = (aiText: string, context: string) => {
     return `You are a critical, non-biased, expert software architecture reviewer. Leave security aspects to the security analysis, strictly talk architecture. Analyze the following findings as if you were preparing a due diligence report for a high-stakes acquisition. Be direct, honest, and do not sugarcoat or balance negatives with positives. If something is bad, call it out clearly and score it accordingly. Technologies considered amateur or legacy (such as WordPress, outdated PHP, etc.) should be highlighted as major risks, and the score should reflect this. Do not be diplomatic—be a real expert. Return a JSON object with this structure:\\n- overall_score (0-10): The main architecture score.\\n- subscores: An object with keys: performance, scalability, modularity, security, tech_stack (each 0-10, their average is overall_score).\\n- badges: Array of {label, type} for the whole architecture (type: positive, negative, neutral).\\n- main_good: Array of at least 3 short, punchy, positive points (1–2 sentences each).\\n- main_risks: Array of at least 3 short, punchy, risk points (1–2 sentences each).\\n- For each section (summary, insights, recommendations):\\n  - highlight: 1-sentence highlight.\\n  - snippet: The first 1–2 sentences of the section.\\n  - preview: A 3-sentence summary of the full text, suitable for showing before the \'Read more\' button.\\n  - text: Full text (at least 300 words).\\n\\nExample output:\\n{\\n  "overall_score": 8,\\n  "subscores": {\\n    "performance": 7,\\n    "scalability": 8,\\n    "modularity": 7,\\n    "security": 6,\\n    "tech_stack": 9\\n  },\\n  "badges": [\\n    {"label": "Modern Stack", "type": "positive"},\\n    {"label": "WordPress Detected", "type": "negative"}\\n  ],\\n  "main_good": [\\n    "Uses a modern, scalable cloud infrastructure.",\\n    "Implements CI/CD for rapid deployment.",\\n    "Strong modularity in frontend components."\\n  ],\\n  "main_risks": [\\n    "Legacy backend components increase maintenance risk.",\\n    "No automated security scanning in CI.",\\n    "Performance bottlenecks in API layer."\\n  ],\\n  "summary": {\\n    "highlight": "Modern stack with some legacy risk.",\\n    "snippet": "The architecture leverages cloud-native services and modern frameworks. However, some legacy components remain.",\\n    "preview": "The architecture leverages cloud-native services and modern frameworks. However, some legacy components remain. This hybrid approach offers flexibility but also complexity.",\\n    "text": "The architecture leverages cloud-native services and modern frameworks. However, some legacy components remain. [at least 300 words...]"\n  },\\n  "insights": { ... },\\n  "recommendations": { ... }\\n}\\nOnly return the JSON object, nothing else.\\n\\nRaw content:\\n\\n${aiText}`;
   } else if (safeContext === "security") {
     return `You are a critical, non-biased, expert security reviewer. Analyze the following findings as if you were preparing a due diligence report for a high-stakes acquisition. Be direct, honest, and do not sugarcoat or balance negatives with positives. If something is bad, call it out clearly and score it accordingly. Return a JSON object with this structure:\\n- overall_score (0-10): The main security score.\\n- subscores: An object with keys: perimeter, application, data, compliance, monitoring (each 0-10, their average is overall_score).\\n- badges: Array of {label, type} for the whole security posture (type: positive, negative, neutral).\\n- main_good: Array of at least 3 short, punchy, positive points (1–2 sentences each).\\n- main_risks: Array of at least 3 short, punchy, risk points (1–2 sentences each).\\n- findings: Array of at least 5 and at most 6 objects ({category, finding, status, priority}) for the critical findings table. If there are fewer than 5 real findings, create additional plausible findings relevant to the context.\\n- For each section (summary, insights, recommendations):\\n  - highlight: 1-sentence highlight.\\n  - snippet: The first 1–2 sentences of the section.\\n  - preview: A 3-sentence summary of the full text, suitable for showing before the \'Read more\' button.\\n  - text: Full text (at least 300 words).\\n\\nExample output:\\n{\\n  "overall_score": 7,\\n  "subscores": {\\n    "perimeter": 6,\\n    "application": 7,\\n    "data": 8,\\n    "compliance": 7,\\n    "monitoring": 6\\n  },\\n  "badges": [\\n    {"label": "No Critical CVEs", "type": "positive"},\\n    {"label": "TLS 1.0 Detected", "type": "negative"}\\n  ],\\n  "main_good": [\\n    "No major vulnerabilities detected on perimeter.",\\n    "Good use of HTTPS and HSTS.",\\n    "No open database ports found."\\n  ],\\n  "main_risks": [\\n    "TLS 1.0 still enabled on some endpoints.",\\n    "7 subdomains exposed in DNS records.",\\n    "HSTS header not enforced on all domains."\\n  ],\\n  "findings": [\\n    {"category": "SSL/TLS", "finding": "TLS 1.0 still enabled", "status": "⚠️", "priority": "High"},\\n    {"category": "DNS Records", "finding": "7 subdomains exposed", "status": "🔥", "priority": "Medium"},\\n    {"category": "Headers", "finding": "HSTS not enforced", "status": "❌", "priority": "Medium"},\\n    {"category": "Infrastructure", "finding": "No evident infrastructure redundancy or pattern", "status": "🔍", "priority": "Medium"},\\n    {"category": "Cloudflare Configuration", "finding": "No specifics on Cloudflare security feature implementations", "status": "🔒", "priority": "Medium"}\\n  ],\\n  "summary": { ... },\\n  "insights": { ... },\\n  "recommendations": { ... }\\n}\\nOnly return the JSON object, nothing else.\\n\\nRaw content:\\n\\n${aiText}`;
+
+  } else if (safeContext === "financials") {
+    return `You are a professional, non-biased, expert financial analyst specializing in capital markets and quantitative due diligence. 
+You will receive a JSON array containing structured data sources:
+- **CapitalMarkets**: Stock market data (prices, volumes, candlestick data, performance across 1D/1W/1M/6M/YTD timeframes)
+- **FinancialPerformance**: Financial statements (income statement, balance sheet, cash flow statement with historical data)
+
+Use this data as your factual foundation. Supplement it only with verifiable public information about the company if needed to contextualize stock and market performance. 
+
+Your task: produce a full financial intelligence report in the exact JSON format below, with all numeric fields graph-ready and text sections written for a professional due diligence dashboard.
+
+---
+
+### DATA INPUT:
+The input below contains data from two sources:
+1. **CapitalMarkets**: Real-time and historical stock market data (prices, volumes, performance metrics across multiple timeframes: 1D, 1W, 1M, 6M, YTD)
+2. **FinancialPerformance**: Financial statement data (income statement, balance sheet, cash flow statement with multi-year historical data)
+
+Use BOTH sources to create a comprehensive financial analysis. CapitalMarkets data populates capital_markets_analysis and market_performance. FinancialPerformance data populates financial_fundamentals.
+
+${aiText}
+
+### OUTPUT STRUCTURE:
+
+{
+  "overall_score": number (0-10),
+  "subscores": {
+    "revenue_growth": number (0-10),
+    "profitability": number (0-10),
+    "cash_flow": number (0-10),
+    "debt_management": number (0-10),
+    "market_position": number (0-10)
+  },
+  "badges": [
+    {"label": string, "type": "positive" | "negative" | "neutral"}
+  ],
+  "main_good": [string],
+  "main_risks": [string],
+
+  "key_metrics": {
+    "market_cap": string or null,
+    "stock_price_current": string or null,
+    "stock_price_52w_high": string or null,
+    "stock_price_52w_low": string or null,
+    "pe_ratio": string or null,
+    "revenue": string or null,
+    "revenue_growth_yoy": string or null,
+    "net_income": string or null,
+    "ebitda_margin": string or null
+  },
+
+  "historical_data": {
+    "stock_price_timeline": [
+      {
+        "date": string,
+        "open": number,
+        "high": number,
+        "low": number,
+        "close": number,
+        "volume": number,
+        "source": string
+      }
+    ]
+  },
+
+  "market_performance": {
+    "stock_performance_summary": string,
+    "ytd_performance": number,
+    "vs_market_benchmark": string,
+    "analyst_ratings": {
+      "buy": number or null,
+      "hold": number or null,
+      "sell": number or null,
+      "average_target_price": string or null
+    },
+    "institutional_ownership": string or null
+  },
+
+  "capital_markets_analysis": {
+    "market_confidence_index": number (0-100),
+    "alignment": "Aligned" | "Divergent" | "Neutral",
+    "intervals": [
+      {
+        "period": string (MUST be one of: "1D", "1W", "1M", "6M", "YTD"), 
+        "volatility": number (0-100),
+        "growth": number (-100 to 100),
+        "momentum_corr": number (-1 to 1),
+        "liquidity": number (0-100)
+      }
+    ],
+    "analysis": {
+      "volatility_analysis": string,
+      "growth_analysis": string,
+      "momentum_analysis": string,
+      "liquidity_analysis": string,
+      "overall_market_commentary": string
+    }
+  },
+
+  "financial_fundamentals": {
+    "summary": string (2-3 sentence overview of financial health),
+    "visual_data": {
+      "revenue_history": [{ "year": string, "value": number }],
+      "net_income_history": [{ "year": string, "value": number }],
+      "ebitda_history": [{ "year": string, "value": number }],
+      "free_cash_flow_history": [{ "year": string, "value": number }],
+      "assets_vs_liabilities": [{ "year": string, "assets": number, "liabilities": number }],
+      "cash_flow_components": [{ "year": string, "operating": number, "investing": number, "financing": number }]
+    },
+    "key_metrics": {
+      "revenue_growth_yoy": number,
+      "net_income_growth_yoy": number,
+      "ebitda_margin": number,
+      "net_margin": number,
+      "roe": number,
+      "roa": number,
+      "debt_to_equity": number,
+      "current_ratio": number,
+      "free_cash_flow_growth": number
+    },
+    "trend_analysis": {
+      "profitability": string (150+ words analyzing profit trends),
+      "liquidity": string (150+ words analyzing liquidity position),
+      "leverage": string (150+ words analyzing debt and leverage),
+      "cash_flow": string (150+ words analyzing cash flow health),
+      "overall_commentary": string (200+ words synthesizing all fundamental trends)
+    },
+    "insights": {
+      "highlight": string,
+      "snippet": string,
+      "preview": string,
+      "text": string
+    },
+    "recommendations": {
+      "highlight": string,
+      "snippet": string,
+      "preview": string,
+      "text": string
+    }
+  },
+
+  "summary": {
+    "highlight": string,
+    "snippet": string,
+    "preview": string,
+    "text": string
+  },
+  "insights": {
+    "highlight": string,
+    "snippet": string,
+    "preview": string,
+    "text": string
+  },
+  "recommendations": {
+    "highlight": string,
+    "snippet": string,
+    "preview": string,
+    "text": string
+  }
+}
+
+---
+
+### SPECIFIC INSTRUCTIONS:
+
+1. **Integrate CapitalMarkets Data**  
+   - Analyze stock data across multiple time horizons: 1 day (1D), 1 week (1W), 1 month (1M), 6 months (6M), and year-to-date (YTD).
+   - For EACH of these five periods, compute volatility, growth, momentum correlation, and liquidity metrics.
+   - Populate \`capital_markets_analysis.intervals\` with exactly 5 entries, one for each period: "1D", "1W", "1M", "6M", "YTD".
+   - Compute an overall \`market_confidence_index\` (0–100) as a composite score across all periods.
+
+2. **Build Market Performance Context**  
+   - Summarize stock behavior across daily, weekly, monthly, and YTD timeframes.
+   - Add benchmark comparison vs NASDAQ or S&P 500.
+   - Include \`ytd_performance\` as a number representing YTD percentage change.
+   - Create realistic analyst ratings (buy/hold/sell split, target price) consistent with the trend.
+
+3. **Populate Historical Timelines**  
+   - Extract historical price data into \`historical_data.stock_price_timeline\` array.
+   - Include daily closing prices with dates for charting purposes.
+   - Ensure all numbers are floats and graph-ready.
+
+4. **Narrative Analysis**  
+   - Fill \`market_performance.stock_performance_summary\` (2–3 sentences covering multiple timeframes).
+   - Provide 100+ word commentary in \`capital_markets_analysis.analysis.*\` sections.
+   - Include professional summaries and recommendations focused on capital market health, investor confidence, and potential valuation trends.
+   - Reference specific time periods (daily, weekly, monthly, YTD) in your analysis.
+
+5. **Financial Fundamentals Analysis** (use FinancialPerformance source data)
+   - **CRITICAL**: Look for data from the "FinancialPerformance" source in the input. This contains financial statement data (income statement, balance sheet, cash flow statement) that you MUST use to populate the financial_fundamentals section.
+   - Parse all available financial metrics from the FinancialPerformance source data.
+   - Populate \`financial_fundamentals.visual_data\` with multi-year time series arrays for: revenue_history, net_income_history, ebitda_history, free_cash_flow_history, assets_vs_liabilities (with separate assets and liabilities values per year), cash_flow_components (with operating, investing, financing per year).
+   - Calculate and populate ALL key financial ratios in \`key_metrics\`: revenue_growth_yoy, net_income_growth_yoy, ebitda_margin, net_margin, roe, roa, debt_to_equity, current_ratio, free_cash_flow_growth. Use the most recent fiscal year data for ratios.
+   - Provide in-depth 150-200 word analyses in \`trend_analysis\` for: profitability (analyze revenue, margins, and net income trends), liquidity (analyze current ratio, cash position, working capital), leverage (analyze debt levels, debt-to-equity, interest coverage), cash_flow (analyze operating cash flow, FCF, cash conversion), and overall_commentary (synthesize all fundamental trends with 200+ words).
+   - Write professional insights and recommendations in the \`insights\` and \`recommendations\` sections that complement the capital markets view and provide actionable intelligence for investors.
+   - If FinancialPerformance source data is NOT available in the input, set \`financial_fundamentals\` to null.
+
+6. **Output Rules**
+   - Always return valid JSON (no comments or text).  
+   - Round numeric values to two decimals.  
+   - Use "null" when data is missing.  
+   - Use factual, professional tone suitable for investment due diligence.
+   - CRITICAL: intervals array must contain exactly 5 objects with periods: "1D", "1W", "1M", "6M", "YTD" in that order.
+`;
   } else if (safeContext === "company_intelligence") {
     return `You are a professional, non-biased, expert business analyst. Your mission is to create the most comprehensive and insightful company intelligence profile possible in JSON format for a due diligence dashboard. 
     You will be given an unstructured text block about a company ("Raw content"). Use this text as your primary source of information. Meticulously extract all factual data from it.
@@ -86,16 +290,31 @@ CORE STRUCTURE:
 
   "investors": list of strings or [],
 
-  "news_press": [
-    {
-      "date": string or null,
-      "headline": string or null,
-      "publication": string or null,
-      "summary": string or null,
-      "link": string or null
-    }
-  ],
-  "news_trends": string (summary of key themes from news in the input and other known sources, 100+ words, analyzed with broader context),
+  "recent_market_news": {
+    "market_sentiment_index": number (0-100, overall market sentiment score),
+    "summary_sentiment": "positive" | "neutral" | "negative",
+    "themes": [string] (key recurring themes from news articles),
+    "key_events": [
+      {
+        "headline": string,
+        "sentiment": "positive" | "neutral" | "negative",
+        "relevance": number (0-100, relevance to company),
+        "impact_horizon": "short-term" | "mid-term" | "long-term",
+        "confidence": number (0-100, confidence in analysis),
+        "summary": string (2-3 sentences),
+        "source": string,
+        "publishedAt": string (ISO date format),
+        "url": string or null
+      }
+    ],
+    "analysis": {
+      "market_impact": string (100+ words analyzing market impact),
+      "strategic_implications": string (100+ words on strategic implications),
+      "investor_reaction": string (100+ words on investor sentiment and reactions)
+    },
+    "risk_signals": [string] (potential risks identified from news),
+    "opportunity_signals": [string] (potential opportunities identified from news)
+  },
 
   "acquisitions": [ { "name": string, "date": string or null, "amount": string or null, "details": string or null } ],
 
@@ -148,6 +367,15 @@ Instructions:
 - For company_overview, ensure unique_selling_points, products_services, main_competitors are populated from the raw content and your knowledge, along with their respective analysis fields and locations_analysis. Be thorough with key_team_members.
 - For financials_metrics, include all available numbers and growth scores from raw content and your knowledge. Make a financial_commentary. Include a financial metrics analysis.
 - For funding rounds, include funding rounds analysis based on all available info.
+- For recent_market_news, PRIORITIZE the "RecentNews" or "market_news_analysis" data provided in the raw content. If this structured news data is present:
+  * Extract the market_sentiment_index (0-100 scale)
+  * Determine overall summary_sentiment (positive/neutral/negative)
+  * List key themes from the news articles
+  * For each news article in key_events, include: headline, sentiment, relevance score, impact_horizon, confidence score, summary, source, publishedAt date, and url
+  * In the analysis object, provide deep 100+ word analyses for market_impact, strategic_implications, and investor_reaction
+  * Extract risk_signals and opportunity_signals as lists of strings
+  * Interpret market and corporate news within the context of company performance, investor sentiment, and business risk
+  * Maintain professional vocabulary and provide concise, actionable insights
 - For graph data, always fill the arrays as fully as possible using data from raw content and your knowledge.
 - Synthesize insightful analysis for all requested analysis fields based on the combined information.
 - Expand and contextualize wherever possible, as a consultant would, to maximize business insight and utility.
@@ -155,7 +383,7 @@ Instructions:
 Raw content:\n\n${aiText}`;
   } else if (safeContext === "adamass_synthesis") {
     return `You are the lead strategist at Adamass, a top-tier M&A and investment advisory firm. 
-    You have received comprehensive reports on a target company: Architecture Review, Security Audit, and Company Intelligence Profile. 
+    You have received comprehensive reports on a target company: Architecture Review, Security Audit, Financial Analysis, and Company Intelligence Profile. 
     Your task is to synthesize this information into a final "Adamass Intelligence Report". 
     This report must provide a decisive, actionable, and forward-looking perspective for a client considering a major transaction (investment, acquisition, or merger).
 
@@ -213,7 +441,7 @@ Raw content:\n\n${aiText}`;
       "closing_statement": "(String: Max 2-3 sentences. Final forward-looking thoughts on the company's potential trajectory if the strategic recommendations are implemented, and its overall strategic importance or fit for the client.)"
     }
 
-    Analyze the provided data which will be a JSON string containing three main keys: 'architectureAnalysis', 'securityAnalysis', and 'companyIntelligenceProfile'. Each of these keys holds the JSON report for that respective area. Synthesize insights from ALL THREE areas.
+    Analyze the provided data which will be a JSON string containing four main keys: 'architectureAnalysis', 'securityAnalysis', 'financialsAnalysis', and 'companyIntelligenceProfile'. Each of these keys holds the JSON report for that respective area. Synthesize insights from ALL FOUR areas.
     For 'strategic_recommendations', ensure they are diverse and directly address major findings or opportunities from the input reports.
     For 'potential_synergies', only include if M&A is a plausible scenario based on the overall company profile. If not particularly relevant, return empty arrays for synergies.
     Be decisive and provide clear, actionable advice. Your audience is a sophisticated client expecting expert guidance.
@@ -284,9 +512,11 @@ export async function POST(req: Request) {
     const architectureRow = allSources.find(row => row.source === 'Architecture');
     const securityRow = allSources.find(row => row.source === 'Security');
     const crunchbaseRow = allSources.find(row => row.source === 'Crunchbase');
+    const financialsRow = allSources.find(row => row.source === 'Financials');
 
     let architecture = null;
     let security = null;
+    let financials = null;
     let companyIntelligence = null;
 
     // Generate Architecture analysis from raw data (+ include user docs if provided)
@@ -328,10 +558,31 @@ export async function POST(req: Request) {
       security = await callOpenAI(secData, 'security', openai);
     }
 
-    // Process company intelligence (supplement Crunchbase with UserDocuments if present)
-    if (crunchbaseRow?.data || userDocs?.data?.documents?.length) {
+    const rawFinancialsData = allSources
+      .filter(row => ['CapitalMarkets', 'FinancialPerformance'].includes(row.source))
+      .map(row => ({
+        source: row.source,
+        data: row.data
+      }));
+    if (userDocs?.data?.documents?.length) {
+      rawFinancialsData.push({
+        source: 'UserDocuments',
+        data: userDocs.data
+      });
+    }
+    
+    if (rawFinancialsData.length > 0) {
+      const finData = JSON.stringify(rawFinancialsData);
+      financials = await callOpenAI(finData, 'financials', openai);
+    }
+
+
+    // Process company intelligence (supplement Crunchbase with RecentNews and UserDocuments if present)
+    const recentNewsRow = allSources.find(row => row.source === 'RecentNews');
+    if (crunchbaseRow?.data || recentNewsRow?.data || userDocs?.data?.documents?.length) {
       const combinedCI = {
         crunchbase: crunchbaseRow?.data ?? null,
+        recent_news: recentNewsRow?.data ?? null,
         user_documents: userDocs?.data ?? null
       };
       const ciText = typeof combinedCI === 'string' ? combinedCI : JSON.stringify(combinedCI);
@@ -343,15 +594,17 @@ export async function POST(req: Request) {
       dateGenerated: new Date().toISOString(),
       architecture,
       security,
+      financials,
       companyIntelligence
     };
 
     // **** NEW: Adamass Intelligence Synthesis ****
     let adamassSynthesisReport = null;
-    if (architecture || security || companyIntelligence) {
+    if (architecture || security || financials || companyIntelligence) {
       const combinedDataForSynthesis = JSON.stringify({ 
         architectureAnalysis: architecture, 
         securityAnalysis: security, 
+        financialsAnalysis: financials, 
         companyIntelligenceProfile: companyIntelligence 
       });
       

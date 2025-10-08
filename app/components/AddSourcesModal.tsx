@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useUser } from "../contexts/UserContext";
 import { supabase } from "../../lib/supabaseClient";
-import { UploadCloud, X, FileText } from "lucide-react";
+import { UploadCloud, X, FileText, Plus, Minus, ChevronDown } from "lucide-react";
 import { useTheme } from "./ThemeToggle";
 
 export interface SourceFormValues {
@@ -12,6 +12,11 @@ export interface SourceFormValues {
   legalAlias: string;
   websiteUrl: string;
   countryOfIncorporation: string;
+  preferredHostUrl?: string;
+  openApiUrl?: string;
+  repositoryUrls?: string[];
+  isPublicCompany?: boolean;
+  tickerSymbol?: string;
   files: File[];
 }
 
@@ -29,7 +34,12 @@ export default function AddSourcesModal({
   const [companyAlias, setCompanyAlias] = useState("");
   const [legalAlias, setLegalAlias] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
+  const [preferredHostUrl, setPreferredHostUrl] = useState("");
   const [countryOfIncorporation, setCountryOfIncorporation] = useState("");
+  const [openApiUrl, setOpenApiUrl] = useState("");
+  const [repositoryUrls, setRepositoryUrls] = useState<string[]>([""]);
+  const [isPublicCompany, setIsPublicCompany] = useState(false);
+  const [tickerSymbol, setTickerSymbol] = useState("");
   const [files, setFiles] = useState<File[]>([]);
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -41,6 +51,25 @@ export default function AddSourcesModal({
   const [isAborted, setIsAborted] = useState(false);
   const abortedRef = useRef(false);
 
+  // Suggestion options for datalists
+  const [companyAliasOptions, setCompanyAliasOptions] = useState<string[]>([]);
+  const [legalAliasOptions, setLegalAliasOptions] = useState<string[]>([]);
+  const [websiteUrlOptions, setWebsiteUrlOptions] = useState<string[]>([]);
+  const [preferredHostOptions, setPreferredHostOptions] = useState<string[]>([]);
+  const [openApiOptions, setOpenApiOptions] = useState<string[]>([]);
+  const [repoUrlOptions, setRepoUrlOptions] = useState<string[]>([]);
+
+  // Accordion active section (null means all closed)
+  const [activeSection, setActiveSection] = useState<'company' | 'web' | 'api' | null>('company');
+  const toggleSection = (section: 'company' | 'web' | 'api') => {
+    setActiveSection((prev) => (prev === section ? null : section));
+  };
+
+  // Refs for smooth height animation
+  const companyRef = useRef<HTMLDivElement>(null);
+  const webRef = useRef<HTMLDivElement>(null);
+  const apiRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
   }, [logs]);
@@ -50,7 +79,12 @@ export default function AddSourcesModal({
       setCompanyAlias("");
       setLegalAlias("");
       setWebsiteUrl("");
+      setPreferredHostUrl("");
       setCountryOfIncorporation("");
+      setOpenApiUrl("");
+      setRepositoryUrls([""]); 
+      setIsPublicCompany(false);
+      setTickerSymbol("");
       setFiles([]);
       setIsProcessing(false);
           setIsCancelling(false);
@@ -62,6 +96,66 @@ export default function AddSourcesModal({
     }
   }, [open]);
 
+  // Load suggestions from previous analyses for dropdowns
+  useEffect(() => {
+    const loadSuggestions = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('user_analyses')
+          .select('company_alias, legal_alias, website_url, country_of_incorporation, report_data')
+          .eq('user_id', user?.id || '')
+          .limit(50);
+        if (error || !data) return;
+        const aliasSet = new Set<string>();
+        const legalSet = new Set<string>();
+        const websiteSet = new Set<string>();
+        const preferredSet = new Set<string>();
+        const openapiSet = new Set<string>();
+        const repoSet = new Set<string>();
+
+        for (const row of data as any[]) {
+          if (row.company_alias) aliasSet.add(row.company_alias);
+          if (row.legal_alias) legalSet.add(row.legal_alias);
+          if (row.website_url) websiteSet.add(row.website_url);
+          // Try to surface any URLs that might be embedded in report_data
+          // without strict assumptions; best-effort extraction
+          const report = row.report_data;
+          if (report && typeof report === 'object') {
+            const possibleUrls: string[] = [];
+            const traverse = (obj: any) => {
+              if (!obj) return;
+              if (typeof obj === 'string') {
+                possibleUrls.push(obj);
+              } else if (Array.isArray(obj)) {
+                for (const it of obj) traverse(it);
+              } else if (typeof obj === 'object') {
+                for (const key of Object.keys(obj)) traverse(obj[key]);
+              }
+            };
+            traverse(report);
+            for (const u of possibleUrls) {
+              if (typeof u === 'string' && /^https?:\/\//i.test(u)) {
+                if (/openapi|swagger|\.json|\.yaml|\.yml/i.test(u)) openapiSet.add(u);
+                if (/app\.|dashboard\.|portal\.|host|app\//i.test(u)) preferredSet.add(u);
+                if (/github\.com\//i.test(u)) repoSet.add(u);
+              }
+            }
+          }
+        }
+
+        setCompanyAliasOptions(Array.from(aliasSet));
+        setLegalAliasOptions(Array.from(legalSet));
+        setWebsiteUrlOptions(Array.from(websiteSet));
+        setPreferredHostOptions(Array.from(preferredSet));
+        setOpenApiOptions(Array.from(openapiSet));
+        setRepoUrlOptions(Array.from(repoSet));
+      } catch {
+        // silently ignore
+      }
+    };
+    if (open) loadSuggestions();
+  }, [open, user?.id]);
+
   if (!open) return null;
 
   const addLog = (s: string) => setLogs((prev) => [...prev, s]);
@@ -69,6 +163,18 @@ export default function AddSourcesModal({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     setFiles(Array.from(e.target.files));
+  };
+
+  const handleAddRepoUrl = () => {
+    setRepositoryUrls((prev) => [...prev, ""]);
+  };
+
+  const handleRepoChange = (index: number, value: string) => {
+    setRepositoryUrls((prev) => prev.map((v, i) => (i === index ? value : v)));
+  };
+
+  const handleRemoveRepo = (index: number) => {
+    setRepositoryUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
   const cancelAnalysis = async () => {
@@ -178,13 +284,22 @@ export default function AddSourcesModal({
       const initResponse = await fetch("/api/initiate-analysis", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          companyAlias,
-          legalAlias,
-          websiteUrl,
-          countryOfIncorporation,
-          jobId: newJob,
-        }),
+        body: (() => {
+          const base: any = {
+            companyAlias,
+            legalAlias,
+            websiteUrl,
+            countryOfIncorporation,
+            jobId: newJob,
+          };
+          if (preferredHostUrl) base.preferredHostUrl = preferredHostUrl;
+          if (openApiUrl) base.openApiUrl = openApiUrl;
+          const cleanedRepos = repositoryUrls.map((u) => u.trim()).filter((u) => u);
+          if (cleanedRepos.length > 0) base.repositoryUrls = cleanedRepos;
+          if (isPublicCompany) base.isPublicCompany = true;
+          if (isPublicCompany && tickerSymbol.trim()) base.tickerSymbol = tickerSymbol.trim();
+          return JSON.stringify(base);
+        })(),
       });
       const initJson = await initResponse.json();
       if (!initResponse.ok) {
@@ -222,7 +337,7 @@ export default function AddSourcesModal({
         
         // Fallback: If all sources are done but isComplete is still false, 
         // check if we can already process the report
-        if (!isComplete && completed === total && total === 6) {
+        if (!isComplete && completed === total && total === 8) {
           addLog("All sources completed, attempting to process report...");
           isComplete = true; // Force completion since all sources are done
         }
@@ -348,12 +463,12 @@ export default function AddSourcesModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur">
-      <div className={`w-[1100px] max-w-[98vw] overflow-hidden rounded-2xl ${isDark ? 'theme-card' : 'bg-white'} ${isDark ? 'theme-border border' : 'ring-1 ring-slate-200'}`}>
+      <div className={`w-[1100px] max-w-[98vw] max-h-[90vh] overflow-hidden rounded-2xl mx-3 my-6 md:my-10 flex flex-col ${isDark ? 'theme-card' : 'bg-white'} ${isDark ? 'theme-border border' : 'ring-1 ring-slate-200'}`}>
         {/* Header */}
-        <div className={`flex items-center justify-between border-b ${isDark ? 'theme-border' : 'border-slate-200'} px-6 py-4`}>
+        <div className={`flex items-center justify-between border-b ${isDark ? 'theme-border' : 'border-slate-200'} px-6 py-6`}>
           <div>
-            <p className={`text-[11px] font-semibold uppercase tracking-wide ${isDark ? 'theme-text-muted' : 'text-slate-600'}`}>New analysis</p>
-            <h2 className={`text-xl font-semibold ${isDark ? 'theme-text' : 'text-slate-900'}`}>Create new</h2>
+            <p className={`text-[18px] font-semibold uppercase tracking-wide ${isDark ? 'theme-text-muted' : 'text-slate-600'}`}>Start a new analysis</p>
+            <h2 className={`text-md font-medium ${isDark ? 'theme-text' : 'text-slate-900'}`}>Provide the necessary details to initiate the analysis.</h2>
           </div>
           <button onClick={onClose} className={`rounded-full p-2 ${isDark ? 'theme-text-muted hover:theme-muted' : 'text-slate-500 hover:bg-slate-100'}`} aria-label="Close">
             <X size={18} />
@@ -361,52 +476,244 @@ export default function AddSourcesModal({
         </div>
 
         {/* Body */}
-        <div className="grid grid-cols-1 md:grid-cols-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 flex-1 min-h-0 overflow-y-auto">
           {/* Left: form */}
-          <form className="space-y-5 px-6 py-6">
-            <div>
-              <label className={`mb-1 block text-xs font-medium uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Company alias</label>
-              <input
-                value={companyAlias}
-                onChange={(e) => setCompanyAlias(e.target.value)}
-                placeholder="e.g. Innovatech"
-                className={`w-full rounded-lg border ${isDark ? 'theme-border bg-transparent theme-text placeholder:theme-text-muted focus:ring-[color:var(--accent)]' : 'border-slate-300 bg-white placeholder-slate-400 focus:border-slate-400 focus:ring-slate-200'} px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2`}
-                required
-              />
+          <form className="space-y-5 px-6 py-6 pb-8">
+            {/* Section 1: Company & Identity */}
+            <div className={`rounded-xl ${isDark ? 'theme-border border' : 'ring-1 ring-slate-200'} overflow-hidden`}>
+              <button
+                type="button"
+                onClick={() => toggleSection('company')}
+                className={`flex w-full items-center justify-between px-4 py-3 ${isDark ? 'theme-card theme-text' : 'bg-white text-slate-800'}`}
+              >
+                <span className="text-sm font-semibold">Company & Identity</span>
+                <ChevronDown className={`transition-transform ${activeSection === 'company' ? 'rotate-180' : ''}`} size={18} />
+              </button>
+              <div className={`${isDark ? 'theme-card' : 'bg-white'} px-4`}>
+                <div
+                  ref={companyRef}
+                  style={{
+                    height: activeSection === 'company' ? companyRef.current?.scrollHeight : 0,
+                    transition: 'height 250ms ease-in-out, opacity 550ms ease-in-out',
+                    opacity: activeSection === 'company' ? 1 : 0,
+                    overflow: 'hidden'
+                  }}
+                  aria-hidden={activeSection !== 'company'}
+                >
+                  <div className="space-y-4 pt-1 pb-4">
+                    <div>
+                    <label className={`mb-1 block text-xs font-medium uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Company alias</label>
+                    <input
+                      value={companyAlias}
+                      onChange={(e) => setCompanyAlias(e.target.value)}
+                      placeholder="e.g. Apple"
+                      list="companyAliasOptions"
+                      className={`w-full rounded-lg border ${isDark ? 'theme-border bg-transparent theme-text placeholder:theme-text-muted focus:ring-[color:var(--accent)]' : 'border-slate-300 bg-white placeholder-slate-400 focus:border-slate-400 focus:ring-slate-200'} px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2`}
+                      required
+                    />
+                    <datalist id="companyAliasOptions">
+                      {companyAliasOptions.map((opt) => (
+                        <option key={opt} value={opt} />
+                      ))}
+                    </datalist>
+                    </div>
+                    <div>
+                    <label className={`mb-1 block text-xs font-medium uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Legal alias</label>
+                    <input
+                      value={legalAlias}
+                      onChange={(e) => setLegalAlias(e.target.value)}
+                      placeholder="e.g. Apple Inc."
+                      list="legalAliasOptions"
+                      className={`w-full rounded-lg border ${isDark ? 'theme-border bg-transparent theme-text placeholder:theme-text-muted focus:ring-[color:var(--accent)]' : 'border-slate-300 bg-white placeholder-slate-400 focus:border-slate-400 focus:ring-slate-200'} px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2`}
+                    />
+                    <datalist id="legalAliasOptions">
+                      {legalAliasOptions.map((opt) => (
+                        <option key={opt} value={opt} />
+                      ))}
+                    </datalist>
+                    </div>
+                    <div>
+                    <label className={`mb-1 block text-xs font-medium uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Ticker symbol</label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        value={tickerSymbol}
+                        onChange={(e) => setTickerSymbol(e.target.value)}
+                        placeholder="e.g. AAPL"
+                        disabled={!isPublicCompany}
+                        className={`w-full rounded-lg border ${isDark ? 'theme-border bg-transparent theme-text placeholder:theme-text-muted focus:ring-[color:var(--accent)]' : 'border-slate-300 bg-white placeholder-slate-400 focus:border-slate-400 focus:ring-slate-200'} px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2 disabled:opacity-50`}
+                      />
+                      <label className="flex items-center gap-2 text-xs">
+                        <input
+                          type="checkbox"
+                          checked={isPublicCompany}
+                          onChange={(e) => setIsPublicCompany(e.target.checked)}
+                          className="h-4 w-4"
+                        />
+                        <span className={`${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Public</span>
+                      </label>
+                    </div>
+                    </div>
+                    <div>
+                    <label className={`mb-1 block text-xs font-medium uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Country of incorporation</label>
+                    <input
+                      value={countryOfIncorporation}
+                      onChange={(e) => setCountryOfIncorporation(e.target.value)}
+                      placeholder="e.g. Ireland, USA"
+                      className={`w-full rounded-lg border ${isDark ? 'theme-border bg-transparent theme-text placeholder:theme-text-muted focus:ring-[color:var(--accent)]' : 'border-slate-300 bg-white placeholder-slate-400 focus:border-slate-400 focus:ring-slate-200'} px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2`}
+                    />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <label className={`mb-1 block text-xs font-medium uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Legal alias</label>
-              <input
-                value={legalAlias}
-                onChange={(e) => setLegalAlias(e.target.value)}
-                placeholder="e.g. Innovatech Solutions Ltd."
-                className={`w-full rounded-lg border ${isDark ? 'theme-border bg-transparent theme-text placeholder:theme-text-muted focus:ring-[color:var(--accent)]' : 'border-slate-300 bg-white placeholder-slate-400 focus:border-slate-400 focus:ring-slate-200'} px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2`}
-              />
+
+            {/* Section 2: Websites */}
+            <div className={`rounded-xl ${isDark ? 'theme-border border' : 'ring-1 ring-slate-200'} overflow-hidden`}>
+              <button
+                type="button"
+                onClick={() => toggleSection('web')}
+                className={`flex w-full items-center justify-between px-4 py-3 ${isDark ? 'theme-card theme-text' : 'bg-white text-slate-800'}`}
+              >
+                <span className="text-sm font-semibold">Web presence</span>
+                <ChevronDown className={`transition-transform ${activeSection === 'web' ? 'rotate-180' : ''}`} size={18} />
+              </button>
+              <div className={`${isDark ? 'theme-card' : 'bg-white'} px-4`}>
+                <div
+                  ref={webRef}
+                  style={{
+                    height: activeSection === 'web' ? webRef.current?.scrollHeight : 0,
+                    transition: 'height 250ms ease-in-out, opacity 500ms ease-in-out',
+                    opacity: activeSection === 'web' ? 1 : 0,
+                    overflow: 'hidden'
+                  }}
+                  aria-hidden={activeSection !== 'web'}
+                >
+                  <div className="space-y-4 pt-1 pb-4">
+                    <div>
+                    <label className={`mb-1 block text-xs font-medium uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Website URL (primary site)</label>
+                    <input
+                      type="url"
+                      value={websiteUrl}
+                      onChange={(e) => setWebsiteUrl(e.target.value)}
+                      placeholder="https://www.apple.com"
+                      list="websiteUrlOptions"
+                      className={`w-full rounded-lg border ${isDark ? 'theme-border bg-transparent theme-text placeholder:theme-text-muted focus:ring-[color:var(--accent)]' : 'border-slate-300 bg-white placeholder-slate-400 focus:border-slate-400 focus:ring-slate-200'} px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2`}
+                      required
+                    />
+                    <datalist id="websiteUrlOptions">
+                      {websiteUrlOptions.map((opt) => (
+                        <option key={opt} value={opt} />
+                      ))}
+                    </datalist>
+                    </div>
+                    <div>
+                    <label className={`mb-1 block text-xs font-medium uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Preferred Host / Application URL (optional)</label>
+                    <input
+                      type="url"
+                      value={preferredHostUrl}
+                      onChange={(e) => setPreferredHostUrl(e.target.value)}
+                      placeholder="https://app.example.com"
+                      list="preferredHostOptions"
+                      className={`w-full rounded-lg border ${isDark ? 'theme-border bg-transparent theme-text placeholder:theme-text-muted focus:ring-[color:var(--accent)]' : 'border-slate-300 bg-white placeholder-slate-400 focus:border-slate-400 focus:ring-slate-200'} px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2`}
+                    />
+                    <datalist id="preferredHostOptions">
+                      {preferredHostOptions.map((opt) => (
+                        <option key={opt} value={opt} />
+                      ))}
+                    </datalist>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <label className={`mb-1 block text-xs font-medium uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Website URL</label>
-              <input
-                type="url"
-                value={websiteUrl}
-                onChange={(e) => setWebsiteUrl(e.target.value)}
-                placeholder="https://example.com"
-                className={`w-full rounded-lg border ${isDark ? 'theme-border bg-transparent theme-text placeholder:theme-text-muted focus:ring-[color:var(--accent)]' : 'border-slate-300 bg-white placeholder-slate-400 focus:border-slate-400 focus:ring-slate-200'} px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2`}
-                required
-              />
-            </div>
-            <div>
-              <label className={`mb-1 block text-xs font-medium uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Country of incorporation</label>
-              <input
-                value={countryOfIncorporation}
-                onChange={(e) => setCountryOfIncorporation(e.target.value)}
-                placeholder="e.g. Germany, USA"
-                className={`w-full rounded-lg border ${isDark ? 'theme-border bg-transparent theme-text placeholder:theme-text-muted focus:ring-[color:var(--accent)]' : 'border-slate-300 bg-white placeholder-slate-400 focus:border-slate-400 focus:ring-slate-200'} px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2`}
-              />
+
+            {/* Section 3: API & Repositories */}
+            <div className={`rounded-xl ${isDark ? 'theme-border border' : 'ring-1 ring-slate-200'} overflow-hidden`}>
+              <button
+                type="button"
+                onClick={() => toggleSection('api')}
+                className={`flex w-full items-center justify-between px-4 py-3 ${isDark ? 'theme-card theme-text' : 'bg-white text-slate-800'}`}
+              >
+                <span className="text-sm font-semibold">API & Repositories</span>
+                <ChevronDown className={`transition-transform ${activeSection === 'api' ? 'rotate-180' : ''}`} size={18} />
+              </button>
+              <div className={`${isDark ? 'theme-card' : 'bg-white'} px-4`}>
+                <div
+                  ref={apiRef}
+                  style={{
+                    height: activeSection === 'api' ? apiRef.current?.scrollHeight : 0,
+                    transition: 'height 250ms ease-in-out, opacity 500ms ease-in-out',
+                    opacity: activeSection === 'api' ? 1 : 0,
+                    overflow: 'hidden'
+                  }}
+                  aria-hidden={activeSection !== 'api'}
+                >
+                  <div className="space-y-4 pt-1 pb-4">
+                    <div>
+                    <label className={`mb-1 block text-xs font-medium uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>OpenAPI URL (optional)</label>
+                    <input
+                      type="url"
+                      value={openApiUrl}
+                      onChange={(e) => setOpenApiUrl(e.target.value)}
+                      placeholder="https://api.example.com/openapi.json"
+                      list="openApiOptions"
+                      className={`w-full rounded-lg border ${isDark ? 'theme-border bg-transparent theme-text placeholder:theme-text-muted focus:ring-[color:var(--accent)]' : 'border-slate-300 bg-white placeholder-slate-400 focus:border-slate-400 focus:ring-slate-200'} px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2`}
+                    />
+                    <datalist id="openApiOptions">
+                      {openApiOptions.map((opt) => (
+                        <option key={opt} value={opt} />
+                      ))}
+                    </datalist>
+                    </div>
+                    <div>
+                    <div className="flex items-center justify-between">
+                      <label className={`mb-1 block text-xs font-medium uppercase tracking-wide ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>Repository URL(s) (optional)</label>
+                      <button
+                        type="button"
+                        onClick={handleAddRepoUrl}
+                        className={`inline-flex items-center gap-1 rounded-md border ${isDark ? 'theme-border theme-card theme-text hover:theme-muted' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'} px-2 py-1 text-xs`}
+                      >
+                        <Plus size={14} /> Add URL
+                      </button>
+                    </div>
+                    <div className="space-y-2 mt-2">
+                      {repositoryUrls.map((url, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <input
+                            type="url"
+                            value={url}
+                            onChange={(e) => handleRepoChange(idx, e.target.value)}
+                            placeholder="https://github.com/org/repo"
+                            list="repoUrlOptions"
+                            className={`flex-1 rounded-lg border ${isDark ? 'theme-border bg-transparent theme-text placeholder:theme-text-muted focus:ring-[color:var(--accent)]' : 'border-slate-300 bg-white placeholder-slate-400 focus:border-slate-400 focus:ring-slate-200'} px-4 py-2.5 text-sm transition focus:outline-none focus:ring-2`}
+                          />
+                          {repositoryUrls.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveRepo(idx)}
+                              className={`inline-flex items-center gap-1 rounded-md border ${isDark ? 'theme-border theme-card theme-text hover:theme-muted' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'} px-2 py-2`}
+                              aria-label="Remove URL"
+                            >
+                              <Minus size={14} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <datalist id="repoUrlOptions">
+                        {repoUrlOptions.map((opt) => (
+                          <option key={opt} value={opt} />
+                        ))}
+                      </datalist>
+                    </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Dropzone-style uploader */}
             <div className={`rounded-xl border border-dashed ${isDark ? 'theme-border theme-muted' : 'border-slate-300 bg-slate-50'} p-5`}>
-              <p className={`mb-2 text-sm font-medium ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>Upload sources (optional)</p>
+              <p className={`mb-2 text-sm font-medium ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>Upload other sources (optional)</p>
               <label className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border ${isDark ? 'theme-border theme-card theme-text hover:theme-muted' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'} px-4 py-2 text-sm font-medium`}>
                 <UploadCloud size={18} />
                 <span>Choose Files</span>
@@ -481,17 +788,51 @@ export default function AddSourcesModal({
           </form>
 
           {/* Right: Logs */}
-          <div className={`border-t ${isDark ? 'theme-border' : 'border-slate-200'} md:border-l md:border-t-0`}>
-            <div className="px-6 py-6">
-              <div className="mb-2 flex items-center justify-between">
-                <h3 className={`text-sm font-semibold ${isDark ? 'theme-text' : 'text-slate-800'}`}>Process Log</h3>
-                {jobId && <span className={`rounded-full ${isDark ? 'theme-muted theme-text-muted' : 'bg-slate-100 text-slate-600'} px-2 py-1 text-[10px]`}>{jobId.slice(0, 8)}</span>}
-              </div>
-              <div ref={logRef} className={`h-[380px] overflow-y-auto rounded-lg ${isDark ? 'theme-muted theme-border border' : 'bg-slate-50 ring-1 ring-slate-200'} p-3 text-xs ${isDark ? 'theme-text' : 'text-slate-800'}`}>
+          <div className={`border-t ${isDark ? 'theme-border' : 'border-slate-200'} md:border-l md:border-t-0 h-full`}>
+            <div className="px-6 py-6 h-full flex flex-col min-h-0">
+              {jobId && (
+                <div className="mb-2 flex items-center justify-end">
+                  <span className={`rounded-full ${isDark ? 'theme-muted theme-text-muted' : 'bg-slate-100 text-slate-600'} px-2 py-1 text-[10px]`}>{jobId.slice(0, 8)}</span>
+                </div>
+              )}
+              <div 
+                ref={logRef} 
+                className={`flex-1 min-h-0 overflow-y-auto rounded-lg ${isDark ? 'bg-slate-950 border border-slate-800' : 'bg-slate-900 ring-1 ring-slate-700'} p-4 text-xs font-mono leading-relaxed`}
+              >
                 {logs.length === 0 ? (
-                  <p className={`${isDark ? 'theme-text-muted' : 'text-slate-400'}`}>Logs will appear here…</p>
+                  <p className="text-slate-500">Logs will appear here…</p>
                 ) : (
-                  logs.map((l, i) => <p key={i} className="mb-1 font-mono">{l}</p>)
+                  logs.map((l, i) => {
+                    // Determine log type and color
+                    let logColor = 'text-slate-300'; // default
+                    let prefix = '';
+                    
+                    if (l.toLowerCase().includes('error') || l.toLowerCase().includes('failed')) {
+                      logColor = 'text-red-400';
+                      prefix = '❌ ';
+                    } else if (l.toLowerCase().includes('warning')) {
+                      logColor = 'text-amber-400';
+                      prefix = '⚠️  ';
+                    } else if (l.toLowerCase().includes('success') || l.toLowerCase().includes('completed') || l.toLowerCase().includes('ready') || l.toLowerCase().includes('saved')) {
+                      logColor = 'text-green-400';
+                      prefix = '✓ ';
+                    } else if (l.toLowerCase().includes('initializing') || l.toLowerCase().includes('triggering') || l.toLowerCase().includes('processing')) {
+                      logColor = 'text-blue-400';
+                      prefix = '▶ ';
+                    } else if (l.toLowerCase().includes('status:') || l.toLowerCase().includes('waiting')) {
+                      logColor = 'text-cyan-400';
+                      prefix = '⋯ ';
+                    } else if (l.toLowerCase().includes('cancel')) {
+                      logColor = 'text-orange-400';
+                      prefix = '⊗ ';
+                    }
+                    
+                    return (
+                      <p key={i} className={`mb-1.5 ${logColor}`}>
+                        <span className="opacity-60">[{new Date().toLocaleTimeString()}]</span> {prefix}{l}
+                      </p>
+                    );
+                  })
                 )}
               </div>
             </div>

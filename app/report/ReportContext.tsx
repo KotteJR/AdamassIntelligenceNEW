@@ -9,6 +9,7 @@ interface StoredReport {
   companyIntelligence: any;
   architecture: any;
   security: any;
+  financials?: any;
   adamassSynthesisReport?: any;
 }
 

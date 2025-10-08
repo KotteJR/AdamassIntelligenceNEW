@@ -30,7 +30,8 @@ Company: ${reportData.companyAlias || 'Unknown Company'}
 
 ANALYSIS SCORES:
 - Architecture: ${reportData.architecture?.overall_score || 'N/A'}/10
-- Security: ${reportData.security?.overall_score || 'N/A'}/10  
+- Security: ${reportData.security?.overall_score || 'N/A'}/10
+- Financial: ${reportData.financials?.overall_score || 'N/A'}/10
 - Adamass Confidence: ${reportData.adamassSynthesisReport?.overall_assessment?.confidence_score || 'N/A'}/10
 
 EXECUTIVE SUMMARY:
@@ -44,6 +45,25 @@ SECURITY:
 Strengths: ${reportData.security?.main_good?.join(', ') || 'Not available'}
 Risks: ${reportData.security?.main_risks?.join(', ') || 'Not available'}
 
+FINANCIAL ANALYSIS:
+Overall Score: ${reportData.financials?.overall_score || 'N/A'}/10
+Market Confidence: ${reportData.financials?.capital_markets_analysis?.market_confidence_index || 'N/A'}/100
+Trend Alignment: ${reportData.financials?.capital_markets_analysis?.alignment || 'N/A'}
+Stock Performance: ${reportData.financials?.market_performance?.stock_performance_summary || 'N/A'}
+Revenue Growth YoY: ${reportData.financials?.financial_fundamentals?.key_metrics?.revenue_growth_yoy || 'N/A'}%
+EBITDA Margin: ${reportData.financials?.financial_fundamentals?.key_metrics?.ebitda_margin || 'N/A'}%
+ROE: ${reportData.financials?.financial_fundamentals?.key_metrics?.roe || 'N/A'}%
+Profitability: ${reportData.financials?.financial_fundamentals?.trend_analysis?.profitability?.substring(0, 150) || 'N/A'}
+Strengths: ${reportData.financials?.main_good?.join(', ') || 'Not available'}
+Risks: ${reportData.financials?.main_risks?.join(', ') || 'Not available'}
+
+MARKET NEWS & SENTIMENT:
+Sentiment Index: ${reportData.companyIntelligence?.recent_market_news?.market_sentiment_index || 'N/A'}/100
+Overall Sentiment: ${reportData.companyIntelligence?.recent_market_news?.summary_sentiment || 'N/A'}
+Key Themes: ${reportData.companyIntelligence?.recent_market_news?.themes?.join(', ') || 'N/A'}
+Risk Signals: ${reportData.companyIntelligence?.recent_market_news?.risk_signals?.slice(0, 3)?.join('; ') || 'N/A'}
+Opportunity Signals: ${reportData.companyIntelligence?.recent_market_news?.opportunity_signals?.slice(0, 3)?.join('; ') || 'N/A'}
+
 STRATEGIC RECOMMENDATIONS:
 ${reportData.adamassSynthesisReport?.strategic_recommendations?.map((rec: any) => `${rec.action_title} (${rec.priority}): ${rec.description}`)?.join('\n') || 'Not available'}
 
@@ -52,11 +72,11 @@ ${reportData.adamassSynthesisReport?.key_risks_and_mitigation?.map((risk: any) =
 
 Create a mind map JSON structure with:
 1. Central node: Company name
-2. Main branches: Architecture, Security, Strategic Outlook, Key Risks, Recommendations
-3. Sub-nodes for specific findings, scores, and details. Every node EXCEPT the central node MUST include a valid "parentId" that points to an existing node to form a tree.
-4. Include cross-branch links in the connections array to show relationships (e.g., a risk linked to a recommendation). Allowed connection types: "supports" | "mitigates" | "causes" | "related".
+2. Main branches: Architecture, Security, Financial Analysis, Market Sentiment, Company Intelligence, Strategic Outlook, Key Risks, Recommendations
+3. Sub-nodes for specific findings, scores, metrics, and details. For Financial Analysis include: Market Confidence, Stock Performance, Revenue Growth, Profitability, Liquidity. For Market Sentiment include: Sentiment Index, Key Themes, Risk Signals, Opportunities. Every node EXCEPT the central node MUST include a valid "parentId" that points to an existing node to form a tree.
+4. Include cross-branch links in the connections array to show relationships (e.g., a financial risk linked to a strategic recommendation, market sentiment linked to opportunities). Allowed connection types: "supports" | "mitigates" | "causes" | "related" | "impacts" | "influences".
 5. Each connection must reference existing node ids and include a numeric strength between 0.2 and 1.
-6. Node colors based on sentiment: green (positive), red (negative), yellow (caution), blue (neutral). Include numerical scores where available
+6. Node colors based on sentiment: green (positive), red (negative), yellow/amber (caution), blue (neutral/information), purple (strategic). Include numerical scores and percentages where available.
 
 Return ONLY valid JSON in this exact format:
 {
@@ -92,7 +112,7 @@ Return ONLY valid JSON in this exact format:
   ]
 }
 
-Make the mind map comprehensive with 25-35 nodes total, showing clear relationships between analysis areas, findings, and strategic implications. Ensure at least 12 cross-branch connections in the connections array.
+Make the mind map comprehensive with 40-60 nodes total, showing clear relationships between analysis areas, findings, financial metrics, market sentiment, and strategic implications. Ensure at least 20-25 cross-branch connections in the connections array to show how different aspects of the business interconnect (e.g., financial performance impacts strategic recommendations, market sentiment influences risks, security issues relate to operational concerns).
 
 IMPORTANT: Return ONLY valid, complete JSON. No markdown, no explanations, just the JSON object.`;
 
@@ -110,7 +130,7 @@ IMPORTANT: Return ONLY valid, complete JSON. No markdown, no explanations, just 
           content: mindmapPrompt
         }
       ],
-      max_tokens: 2000,
+      max_tokens: 4000,
       temperature: 0.3,
     });
 
