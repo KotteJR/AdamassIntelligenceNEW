@@ -80,6 +80,101 @@ const DetailedInfoCard: React.FC<DetailedInfoCardProps> = ({
   );
 };
 
+// Key Events Section Component with Show More/Less
+const KeyEventsSection: React.FC<{ events: any[]; isDark: boolean }> = ({ events, isDark }) => {
+  const [showAll, setShowAll] = useState(false);
+  const displayedEvents = showAll ? events : events.slice(0, 3);
+  const hasMore = events.length > 3;
+
+  return (
+    <>
+      <div className="space-y-4">
+        {displayedEvents.map((event: any, idx: number) => (
+          <div key={idx} className={`border rounded-xl p-5 ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
+            <div className="flex items-start justify-between mb-3">
+              <h5 className={`font-semibold text-base flex-1 ${isDark ? 'theme-text' : 'text-slate-800'}`}>
+                {event.headline}
+              </h5>
+              <span className={`px-2 py-1 text-xs font-medium rounded-lg whitespace-nowrap ml-3 ${
+                event.sentiment === 'positive' 
+                  ? (isDark ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-700')
+                  : event.sentiment === 'negative'
+                  ? (isDark ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-700')
+                  : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-600')
+              }`}>
+                {event.sentiment}
+              </span>
+            </div>
+            
+            <p className={`text-xs mb-3 ${isDark ? 'theme-text-muted' : 'text-slate-500'}`}>
+              {new Date(event.publishedAt).toLocaleDateString()} • {event.source}
+            </p>
+            
+            <p className={`text-sm mb-4 leading-relaxed ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>
+              {event.summary}
+            </p>
+
+            {/* Metrics Row */}
+            <div className="grid grid-cols-3 gap-3 mb-3">
+              <div className={`p-3 rounded-lg ${isDark ? 'bg-slate-800/50' : 'bg-slate-50'}`}>
+                <div className={`text-xs font-medium mb-1 ${isDark ? 'theme-text-muted' : 'text-slate-600'}`}>Relevance</div>
+                <div className={`text-lg font-bold ${isDark ? 'theme-text' : 'text-slate-900'}`}>{event.relevance}%</div>
+              </div>
+              <div className={`p-3 rounded-lg ${isDark ? 'bg-slate-800/50' : 'bg-slate-50'}`}>
+                <div className={`text-xs font-medium mb-1 ${isDark ? 'theme-text-muted' : 'text-slate-600'}`}>Confidence</div>
+                <div className={`text-lg font-bold ${isDark ? 'theme-text' : 'text-slate-900'}`}>{event.confidence}%</div>
+              </div>
+              <div className={`p-3 rounded-lg ${isDark ? 'bg-slate-800/50' : 'bg-slate-50'}`}>
+                <div className={`text-xs font-medium mb-1 ${isDark ? 'theme-text-muted' : 'text-slate-600'}`}>Horizon</div>
+                <div className={`text-sm font-semibold ${isDark ? 'theme-text' : 'text-slate-900'}`}>{event.impact_horizon}</div>
+              </div>
+            </div>
+
+            {event.url && (
+              <a href={event.url} target="_blank" rel="noopener noreferrer" className={`text-sm font-medium hover:underline inline-flex items-center gap-1 ${isDark ? 'accent' : 'text-blue-600'}`}>
+                Read full article
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Show More / Show Less Button */}
+      {hasMore && (
+        <div className="mt-4 flex justify-center">
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className={`px-6 py-2.5 rounded-lg font-medium text-sm transition-all ${
+              isDark 
+                ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700' 
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
+            }`}
+          >
+            {showAll ? (
+              <span className="flex items-center gap-2">
+                Show Less
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                </svg>
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                Show More ({events.length - 3} more)
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </span>
+            )}
+          </button>
+        </div>
+      )}
+    </>
+  );
+};
+
 const ReportClient = () => {
   const { report, isLoading, jobId } = useReport();
 
@@ -897,7 +992,7 @@ const ReportClient = () => {
                 <div>
                   <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>Stock Price History</h3>
                   <div className={`p-6 border rounded-xl ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
-                    <div className="h-64 relative">
+                    <div className="h-64 relative pr-16 pb-6">
                       {/* SVG Line Chart */}
                       <svg className="w-full h-full" viewBox="0 0 800 200" preserveAspectRatio="none">
                         {/* Grid lines */}
@@ -905,10 +1000,10 @@ const ReportClient = () => {
                           {[0, 1, 2, 3, 4].map((i) => (
                             <line
                               key={`grid-${i}`}
-                              x1="0"
-                              y1={i * 50}
-                              x2="800"
-                              y2={i * 50}
+                              x1="20"
+                              y1={10 + i * 45}
+                              x2="780"
+                              y2={10 + i * 45}
                               stroke={isDark ? '#94a3b8' : '#cbd5e1'}
                               strokeWidth="1"
                             />
@@ -923,12 +1018,12 @@ const ReportClient = () => {
                           const priceRange = maxPrice - minPrice || 1;
                           
                           const points = financials.historical_data.stock_price_timeline.map((point: any, idx: number) => {
-                            const x = (idx / (financials.historical_data.stock_price_timeline.length - 1)) * 800;
-                            const y = 200 - ((point.close - minPrice) / priceRange) * 180 - 10;
+                            const x = 20 + (idx / (financials.historical_data.stock_price_timeline.length - 1)) * 760;
+                            const y = 10 + (1 - (point.close - minPrice) / priceRange) * 180;
                             return `${x},${y}`;
                           }).join(' ');
                           
-                          const areaPoints = `0,200 ${points} 800,200`;
+                          const areaPoints = `20,190 ${points} 780,190`;
                           
                           return (
                             <>
@@ -954,8 +1049,8 @@ const ReportClient = () => {
                               />
                               {/* Data points */}
                               {financials.historical_data.stock_price_timeline.map((point: any, idx: number) => {
-                                const x = (idx / (financials.historical_data.stock_price_timeline.length - 1)) * 800;
-                                const y = 200 - ((point.close - minPrice) / priceRange) * 180 - 10;
+                                const x = 20 + (idx / (financials.historical_data.stock_price_timeline.length - 1)) * 760;
+                                const y = 10 + (1 - (point.close - minPrice) / priceRange) * 180;
                                 return (
                                   <circle
                                     key={idx}
@@ -973,7 +1068,7 @@ const ReportClient = () => {
                       </svg>
                       
                       {/* Labels */}
-                      <div className="flex justify-between mt-3">
+                      <div className="flex justify-between mt-3 px-1">
                         {financials.historical_data.stock_price_timeline.map((point: any, idx: number) => {
                           if (idx % Math.ceil(financials.historical_data.stock_price_timeline.length / 5) === 0 || idx === financials.historical_data.stock_price_timeline.length - 1) {
                             return (
@@ -987,7 +1082,7 @@ const ReportClient = () => {
                       </div>
                       
                       {/* Price range labels */}
-                      <div className="absolute right-0 top-0 bottom-0 flex flex-col justify-between text-right pr-2">
+                      <div className="absolute right-0 top-0 h-full flex flex-col justify-between py-2">
                         {(() => {
                           const prices = financials.historical_data.stock_price_timeline.map((d: any) => d.close || 0);
                           const minPrice = Math.min(...prices);
@@ -1306,31 +1401,79 @@ const ReportClient = () => {
                     </div>
                   )}
 
-                  {/* Key Metrics Cards */}
+                  {/* Key Metrics Table */}
                   {financials.financial_fundamentals.key_metrics && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                      {Object.entries(financials.financial_fundamentals.key_metrics).map(([key, value]) => {
-                        if (value == null) return null;
-                        const numValue = typeof value === 'number' ? value : parseFloat(value as string);
-                        const isPositive = numValue > 0;
-                        const isGrowth = key.includes('growth');
-                        const label = key.split('_').map(word => word.toUpperCase()).join(' ');
-                        
-                        return (
-                          <div key={key} className={`p-4 border rounded-xl ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
-                            <div className={`text-xs font-medium uppercase tracking-wide mb-2 ${isDark ? 'theme-text-muted' : 'text-slate-600'}`}>
-                              {label.replace(/_/g, ' ')}
-                            </div>
-                            <div className={`text-2xl font-bold ${
-                              isGrowth
-                                ? (isPositive ? 'text-green-500' : 'text-red-500')
-                                : (isDark ? 'theme-text' : 'text-slate-900')
-                            }`}>
-                              {numValue.toFixed(2)}{key.includes('margin') || key.includes('roe') || key.includes('roa') || key.includes('growth') ? '%' : ''}
-                            </div>
-                          </div>
-                        );
-                      })}
+                    <div className="mb-6">
+                      <h4 className={`text-sm font-semibold mb-4 ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>Key Financial Metrics</h4>
+                      <div className={`border rounded-xl overflow-hidden ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
+                        <div className="grid grid-cols-1 lg:grid-cols-2">
+                          {Object.entries(financials.financial_fundamentals.key_metrics).map(([key, value], idx, arr) => {
+                            if (value == null) return null;
+                            
+                            const numValue = typeof value === 'number' ? value : parseFloat(value as string);
+                            const isGrowth = key.includes('growth');
+                            
+                            // Format label
+                            const label = key
+                              .split('_')
+                              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                              .join(' ');
+                            
+                            // Determine icon and color based on metric type
+                            let icon, iconBg;
+                            if (key.includes('revenue')) {
+                              icon = <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd"/></svg>;
+                              iconBg = isDark ? 'bg-green-500/10' : 'bg-green-50';
+                            } else if (key.includes('margin') || key.includes('roe') || key.includes('roa')) {
+                              icon = <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd"/></svg>;
+                              iconBg = isDark ? 'bg-blue-500/10' : 'bg-blue-50';
+                            } else if (key.includes('debt')) {
+                              icon = <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"/></svg>;
+                              iconBg = isDark ? 'bg-amber-500/10' : 'bg-amber-50';
+                            } else if (key.includes('current_ratio')) {
+                              icon = <svg className="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>;
+                              iconBg = isDark ? 'bg-purple-500/10' : 'bg-purple-50';
+                            } else {
+                              icon = <svg className="w-4 h-4 text-slate-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>;
+                              iconBg = isDark ? 'bg-slate-500/10' : 'bg-slate-50';
+                            }
+                            
+                            // Calculate row positioning for borders
+                            const totalItems = arr.filter(([, v]) => v != null).length;
+                            const isOdd = idx % 2 === 0;
+                            const rowIndex = Math.floor(idx / 2);
+                            const totalRows = Math.ceil(totalItems / 2);
+                            const isLastRow = rowIndex === totalRows - 1;
+                            
+                            return (
+                              <div 
+                                key={key}
+                                className={`flex items-center justify-between px-6 py-4 transition-colors ${
+                                  isDark ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50'
+                                } ${!isLastRow ? (isDark ? 'border-b border-slate-700/50' : 'border-b border-slate-100') : ''} ${
+                                  isOdd ? (isDark ? 'lg:border-r lg:border-slate-700/50' : 'lg:border-r lg:border-slate-100') : ''
+                                }`}
+                              >
+                                <div className="flex items-center gap-4 flex-1">
+                                  <div className={`p-2.5 rounded-lg ${iconBg}`}>
+                                    {icon}
+                                  </div>
+                                  <span className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                                    {label}
+                                  </span>
+                                </div>
+                                <div className={`text-lg font-bold ${
+                                  isGrowth
+                                    ? (numValue > 0 ? 'text-green-500' : numValue < 0 ? 'text-red-500' : (isDark ? 'text-white' : 'text-slate-900'))
+                                    : (isDark ? 'text-white' : 'text-slate-900')
+                                }`}>
+                                  {numValue.toFixed(2)}{key.includes('margin') || key.includes('roe') || key.includes('roa') || key.includes('growth') ? '%' : ''}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -1514,30 +1657,30 @@ const ReportClient = () => {
                       {/* Assets vs Liabilities */}
                       {financials.financial_fundamentals.visual_data.assets_vs_liabilities && financials.financial_fundamentals.visual_data.assets_vs_liabilities.length > 0 && (
                         <div className={`p-6 border rounded-xl ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
-                          <h4 className={`text-sm font-semibold mb-6 ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>Assets vs Liabilities</h4>
-                          <div className="space-y-4">
+                          <h4 className={`text-sm font-semibold mb-4 ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>Assets vs Liabilities</h4>
+                          <div className="space-y-6">
                             {financials.financial_fundamentals.visual_data.assets_vs_liabilities.map((d: any, idx: number) => {
                               const maxVal = Math.max(d.assets, d.liabilities);
                               return (
-                                <div key={idx}>
-                                  <div className={`text-sm font-semibold mb-2 ${isDark ? 'theme-text' : 'text-slate-800'}`}>{d.year}</div>
-                                  <div className="space-y-2">
+                                <div key={idx} className={`pb-6 ${idx < financials.financial_fundamentals.visual_data.assets_vs_liabilities.length - 1 ? (isDark ? 'border-b border-slate-700/50' : 'border-b border-slate-100') : ''}`}>
+                                  <div className={`text-xs font-semibold mb-3 uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{d.year}</div>
+                                  <div className="space-y-3">
                                     <div>
-                                      <div className="flex justify-between text-xs mb-1">
-                                        <span className={isDark ? 'text-green-400' : 'text-green-600'}>Assets</span>
-                                        <span className={isDark ? 'text-green-400' : 'text-green-600'}>${(d.assets / 1000000).toFixed(2)}M</span>
+                                      <div className="flex justify-between items-baseline mb-1.5">
+                                        <span className={`text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Assets</span>
+                                        <span className={`text-sm font-bold ${isDark ? 'text-green-400' : 'text-green-600'}`}>${(d.assets / 1000000).toFixed(2)}M</span>
                                       </div>
-                                      <div className={`h-6 rounded-full overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`}>
-                                        <div className="h-full bg-gradient-to-r from-green-500 to-green-400" style={{ width: `${(d.assets / maxVal) * 100}%` }} />
+                                      <div className={`h-2 rounded overflow-hidden ${isDark ? 'bg-slate-800/50' : 'bg-slate-100'}`}>
+                                        <div className={`h-full ${isDark ? 'bg-green-500' : 'bg-green-500'}`} style={{ width: `${(d.assets / maxVal) * 100}%` }} />
                                       </div>
                                     </div>
                                     <div>
-                                      <div className="flex justify-between text-xs mb-1">
-                                        <span className={isDark ? 'text-red-400' : 'text-red-600'}>Liabilities</span>
-                                        <span className={isDark ? 'text-red-400' : 'text-red-600'}>${(d.liabilities / 1000000).toFixed(2)}M</span>
+                                      <div className="flex justify-between items-baseline mb-1.5">
+                                        <span className={`text-xs font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Liabilities</span>
+                                        <span className={`text-sm font-bold ${isDark ? 'text-red-400' : 'text-red-600'}`}>${(d.liabilities / 1000000).toFixed(2)}M</span>
                                       </div>
-                                      <div className={`h-6 rounded-full overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`}>
-                                        <div className="h-full bg-gradient-to-r from-red-500 to-red-400" style={{ width: `${(d.liabilities / maxVal) * 100}%` }} />
+                                      <div className={`h-2 rounded overflow-hidden ${isDark ? 'bg-slate-800/50' : 'bg-slate-100'}`}>
+                                        <div className={`h-full ${isDark ? 'bg-red-500' : 'bg-red-500'}`} style={{ width: `${(d.liabilities / maxVal) * 100}%` }} />
                                       </div>
                                     </div>
                                   </div>
@@ -1551,32 +1694,181 @@ const ReportClient = () => {
                       {/* Cash Flow Components */}
                       {financials.financial_fundamentals.visual_data.cash_flow_components && financials.financial_fundamentals.visual_data.cash_flow_components.length > 0 && (
                         <div className={`p-6 border rounded-xl ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
-                          <h4 className={`text-sm font-semibold mb-6 ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>Cash Flow Components</h4>
-                          <div className="space-y-4">
+                          <h4 className={`text-sm font-semibold mb-4 ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>Cash Flow Components</h4>
+                          
+                          {/* Line Chart Visualization */}
+                          <div className="mb-6">
+                            <div className="h-48 relative">
+                              <svg className="w-full h-full" viewBox="0 0 600 180" preserveAspectRatio="none">
+                                {/* Grid lines */}
+                                <g className="opacity-10">
+                                  {[0, 1, 2, 3, 4].map((i) => (
+                                    <line
+                                      key={`grid-${i}`}
+                                      x1="50"
+                                      y1={i * 45}
+                                      x2="600"
+                                      y2={i * 45}
+                                      stroke={isDark ? '#94a3b8' : '#cbd5e1'}
+                                      strokeWidth="1"
+                                    />
+                                  ))}
+                                </g>
+                                
+                                {/* Zero line */}
+                                {(() => {
+                                  const data = financials.financial_fundamentals.visual_data.cash_flow_components;
+                                  const allValues = data.flatMap((d: any) => [d.operating, d.investing, d.financing]);
+                                  const maxVal = Math.max(...allValues);
+                                  const minVal = Math.min(...allValues);
+                                  const range = maxVal - minVal || 1;
+                                  const zeroY = 180 - ((0 - minVal) / range) * 160 - 10;
+                                  
+                                  return (
+                                    <line
+                                      x1="50"
+                                      y1={zeroY}
+                                      x2="600"
+                                      y2={zeroY}
+                                      stroke={isDark ? '#475569' : '#cbd5e1'}
+                                      strokeWidth="1"
+                                      strokeDasharray="4 4"
+                                    />
+                                  );
+                                })()}
+                                
+                                {/* Operating Cash Flow Line */}
+                                {(() => {
+                                  const data = financials.financial_fundamentals.visual_data.cash_flow_components;
+                                  const allValues = data.flatMap((d: any) => [d.operating, d.investing, d.financing]);
+                                  const maxVal = Math.max(...allValues);
+                                  const minVal = Math.min(...allValues);
+                                  const range = maxVal - minVal || 1;
+                                  
+                                  const points = data.map((d: any, i: number) => {
+                                    const x = 50 + (i / (data.length - 1)) * 550;
+                                    const y = 180 - ((d.operating - minVal) / range) * 160 - 10;
+                                    return `${x},${y}`;
+                                  }).join(' ');
+                                  
+                                  return (
+                                    <polyline
+                                      points={points}
+                                      fill="none"
+                                      stroke="#3b82f6"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                  );
+                                })()}
+                                
+                                {/* Investing Cash Flow Line */}
+                                {(() => {
+                                  const data = financials.financial_fundamentals.visual_data.cash_flow_components;
+                                  const allValues = data.flatMap((d: any) => [d.operating, d.investing, d.financing]);
+                                  const maxVal = Math.max(...allValues);
+                                  const minVal = Math.min(...allValues);
+                                  const range = maxVal - minVal || 1;
+                                  
+                                  const points = data.map((d: any, i: number) => {
+                                    const x = 50 + (i / (data.length - 1)) * 550;
+                                    const y = 180 - ((d.investing - minVal) / range) * 160 - 10;
+                                    return `${x},${y}`;
+                                  }).join(' ');
+                                  
+                                  return (
+                                    <polyline
+                                      points={points}
+                                      fill="none"
+                                      stroke="#ef4444"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                  );
+                                })()}
+                                
+                                {/* Financing Cash Flow Line */}
+                                {(() => {
+                                  const data = financials.financial_fundamentals.visual_data.cash_flow_components;
+                                  const allValues = data.flatMap((d: any) => [d.operating, d.investing, d.financing]);
+                                  const maxVal = Math.max(...allValues);
+                                  const minVal = Math.min(...allValues);
+                                  const range = maxVal - minVal || 1;
+                                  
+                                  const points = data.map((d: any, i: number) => {
+                                    const x = 50 + (i / (data.length - 1)) * 550;
+                                    const y = 180 - ((d.financing - minVal) / range) * 160 - 10;
+                                    return `${x},${y}`;
+                                  }).join(' ');
+                                  
+                                  return (
+                                    <polyline
+                                      points={points}
+                                      fill="none"
+                                      stroke="#f59e0b"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                  );
+                                })()}
+                              </svg>
+                              
+                              {/* Year labels */}
+                              <div className="flex justify-between mt-2 pl-12">
+                                {financials.financial_fundamentals.visual_data.cash_flow_components.map((d: any, i: number) => (
+                                  <span key={i} className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                                    {d.year}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Legend */}
+                          <div className="flex flex-wrap gap-4 justify-center">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full bg-blue-500" />
+                              <span className={`text-xs ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Operating</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full bg-red-500" />
+                              <span className={`text-xs ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Investing</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full bg-amber-500" />
+                              <span className={`text-xs ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Financing</span>
+                            </div>
+                          </div>
+                          
+                          {/* Data Table */}
+                          <div className="mt-6 space-y-3">
                             {financials.financial_fundamentals.visual_data.cash_flow_components.map((d: any, idx: number) => (
-                              <div key={idx}>
-                                <div className={`text-sm font-semibold mb-3 ${isDark ? 'theme-text' : 'text-slate-800'}`}>{d.year}</div>
-                                <div className="flex gap-2 h-20">
-                                  <div className="flex-1 flex flex-col justify-end">
-                                    <div className={`text-xs mb-1 text-center ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
+                              <div 
+                                key={idx}
+                                className={`flex items-center gap-6 pb-3 ${idx < financials.financial_fundamentals.visual_data.cash_flow_components.length - 1 ? (isDark ? 'border-b border-slate-700/50' : 'border-b border-slate-100') : ''}`}
+                              >
+                                <div className={`text-sm font-semibold uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'} min-w-[60px]`}>{d.year}</div>
+                                <div className="grid grid-cols-3 gap-4 text-center flex-1">
+                                  <div>
+                                    <div className={`text-xs mb-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Operating</div>
+                                    <div className={`text-sm font-bold text-blue-500`}>
                                       ${(d.operating / 1000000).toFixed(1)}M
                                     </div>
-                                    <div className="bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-lg" style={{ height: `${Math.abs(d.operating) / Math.max(Math.abs(d.operating), Math.abs(d.investing), Math.abs(d.financing)) * 100}%`, minHeight: '20px' }} />
-                                    <div className={`text-xs mt-1 text-center ${isDark ? 'theme-text-muted' : 'text-slate-600'}`}>Operating</div>
                                   </div>
-                                  <div className="flex-1 flex flex-col justify-end">
-                                    <div className={`text-xs mb-1 text-center ${d.investing < 0 ? (isDark ? 'text-red-400' : 'text-red-600') : (isDark ? 'text-green-400' : 'text-green-600')}`}>
+                                  <div>
+                                    <div className={`text-xs mb-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Investing</div>
+                                    <div className={`text-sm font-bold ${d.investing < 0 ? 'text-red-500' : 'text-green-500'}`}>
                                       ${(d.investing / 1000000).toFixed(1)}M
                                     </div>
-                                    <div className={`${d.investing < 0 ? 'bg-gradient-to-t from-red-500 to-red-400' : 'bg-gradient-to-t from-green-500 to-green-400'} rounded-t-lg`} style={{ height: `${Math.abs(d.investing) / Math.max(Math.abs(d.operating), Math.abs(d.investing), Math.abs(d.financing)) * 100}%`, minHeight: '20px' }} />
-                                    <div className={`text-xs mt-1 text-center ${isDark ? 'theme-text-muted' : 'text-slate-600'}`}>Investing</div>
                                   </div>
-                                  <div className="flex-1 flex flex-col justify-end">
-                                    <div className={`text-xs mb-1 text-center ${d.financing < 0 ? (isDark ? 'text-red-400' : 'text-red-600') : (isDark ? 'text-green-400' : 'text-green-600')}`}>
+                                  <div>
+                                    <div className={`text-xs mb-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Financing</div>
+                                    <div className={`text-sm font-bold ${d.financing < 0 ? 'text-red-500' : 'text-amber-500'}`}>
                                       ${(d.financing / 1000000).toFixed(1)}M
                                     </div>
-                                    <div className={`${d.financing < 0 ? 'bg-gradient-to-t from-red-500 to-red-400' : 'bg-gradient-to-t from-amber-500 to-amber-400'} rounded-t-lg`} style={{ height: `${Math.abs(d.financing) / Math.max(Math.abs(d.operating), Math.abs(d.investing), Math.abs(d.financing)) * 100}%`, minHeight: '20px' }} />
-                                    <div className={`text-xs mt-1 text-center ${isDark ? 'theme-text-muted' : 'text-slate-600'}`}>Financing</div>
                                   </div>
                                 </div>
                               </div>
@@ -1884,59 +2176,7 @@ const ReportClient = () => {
                     {companyIntelligence.recent_market_news.key_events && companyIntelligence.recent_market_news.key_events.length > 0 && (
                       <div>
                         <h4 className={`text-base font-semibold mb-4 ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>Key Events</h4>
-                        <div className="space-y-4">
-                          {companyIntelligence.recent_market_news.key_events.map((event: any, idx: number) => (
-                            <div key={idx} className={`border rounded-xl p-5 ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
-                              <div className="flex items-start justify-between mb-3">
-                                <h5 className={`font-semibold text-base flex-1 ${isDark ? 'theme-text' : 'text-slate-800'}`}>
-                                  {event.headline}
-                                </h5>
-                                <span className={`px-2 py-1 text-xs font-medium rounded-lg whitespace-nowrap ml-3 ${
-                                  event.sentiment === 'positive' 
-                                    ? (isDark ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-700')
-                                    : event.sentiment === 'negative'
-                                    ? (isDark ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-700')
-                                    : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-600')
-                                }`}>
-                                  {event.sentiment}
-                                </span>
-                              </div>
-                              
-                              <p className={`text-xs mb-3 ${isDark ? 'theme-text-muted' : 'text-slate-500'}`}>
-                                {new Date(event.publishedAt).toLocaleDateString()} • {event.source}
-                              </p>
-                              
-                              <p className={`text-sm mb-4 leading-relaxed ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>
-                                {event.summary}
-                              </p>
-
-                              {/* Metrics Row */}
-                              <div className="grid grid-cols-3 gap-3 mb-3">
-                                <div className={`p-3 rounded-lg ${isDark ? 'bg-slate-800/50' : 'bg-slate-50'}`}>
-                                  <div className={`text-xs font-medium mb-1 ${isDark ? 'theme-text-muted' : 'text-slate-600'}`}>Relevance</div>
-                                  <div className={`text-lg font-bold ${isDark ? 'theme-text' : 'text-slate-900'}`}>{event.relevance}%</div>
-                                </div>
-                                <div className={`p-3 rounded-lg ${isDark ? 'bg-slate-800/50' : 'bg-slate-50'}`}>
-                                  <div className={`text-xs font-medium mb-1 ${isDark ? 'theme-text-muted' : 'text-slate-600'}`}>Confidence</div>
-                                  <div className={`text-lg font-bold ${isDark ? 'theme-text' : 'text-slate-900'}`}>{event.confidence}%</div>
-                                </div>
-                                <div className={`p-3 rounded-lg ${isDark ? 'bg-slate-800/50' : 'bg-slate-50'}`}>
-                                  <div className={`text-xs font-medium mb-1 ${isDark ? 'theme-text-muted' : 'text-slate-600'}`}>Horizon</div>
-                                  <div className={`text-sm font-semibold ${isDark ? 'theme-text' : 'text-slate-900'}`}>{event.impact_horizon}</div>
-                                </div>
-                              </div>
-
-                              {event.url && (
-                                <a href={event.url} target="_blank" rel="noopener noreferrer" className={`text-sm font-medium hover:underline inline-flex items-center gap-1 ${isDark ? 'accent' : 'text-blue-600'}`}>
-                                  Read full article
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                  </svg>
-                                </a>
-                              )}
-                            </div>
-                          ))}
-                        </div>
+                        <KeyEventsSection events={companyIntelligence.recent_market_news.key_events} isDark={isDark} />
                       </div>
                     )}
 
