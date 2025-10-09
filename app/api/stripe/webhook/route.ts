@@ -175,11 +175,11 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       price_id: subscription.items.data[0]?.price.id,
       quantity: subscription.items.data[0]?.quantity || 1,
       cancel_at_period_end: subscription.cancel_at_period_end,
-      current_period_start: subscription.current_period_start 
-        ? new Date(subscription.current_period_start * 1000).toISOString() 
+      current_period_start: (subscription as any).current_period_start 
+        ? new Date((subscription as any).current_period_start * 1000).toISOString() 
         : null,
-      current_period_end: subscription.current_period_end 
-        ? new Date(subscription.current_period_end * 1000).toISOString() 
+      current_period_end: (subscription as any).current_period_end 
+        ? new Date((subscription as any).current_period_end * 1000).toISOString() 
         : null,
     });
 
@@ -205,11 +205,11 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       subscription_status: subscription.status,
       analyses_limit: analysesLimit,
       analyses_remaining: analysesLimit,
-      subscription_period_end: subscription.current_period_end 
-        ? new Date(subscription.current_period_end * 1000).toISOString() 
+      subscription_period_end: (subscription as any).current_period_end 
+        ? new Date((subscription as any).current_period_end * 1000).toISOString() 
         : null,
-      subscription_period_start: subscription.current_period_start 
-        ? new Date(subscription.current_period_start * 1000).toISOString() 
+      subscription_period_start: (subscription as any).current_period_start 
+        ? new Date((subscription as any).current_period_start * 1000).toISOString() 
         : null,
     })
     .eq('id', finalUserId);
@@ -255,7 +255,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 
 // Handle successful invoice payment
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
-  const subscriptionId = invoice.subscription as string;
+  const subscriptionId = (invoice as any).subscription as string;
   
   if (!subscriptionId) return;
 
@@ -282,7 +282,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
 
 // Handle failed invoice payment
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
-  const subscriptionId = invoice.subscription as string;
+  const subscriptionId = (invoice as any).subscription as string;
   
   if (!subscriptionId) return;
 

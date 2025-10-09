@@ -7,7 +7,8 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-11-20.acacia',
+  // Use SDK default API version to avoid TS union mismatches across SDK updates
+  apiVersion: undefined as any,
   typescript: true,
   appInfo: {
     name: 'Adamass Intelligence',
