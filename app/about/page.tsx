@@ -43,10 +43,10 @@ export default function AboutPage() {
               </h1>
             </div>
             <div className="space-y-6 md:mt-40">
-              <p className={`text-base leading-relaxed text-justify ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>
+              <p className={`text-base leading-relaxed text-left ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>
                 Due diligence processes require time and thoroughness—that's understood and necessary. However, when conducting desktop reviews based exclusively on publicly available information, manual processes are no longer the only viable approach. Modern AI technology enables systematic, unbiased analysis while maintaining the rigor essential to comprehensive due diligence.
               </p>
-              <p className={`text-base leading-relaxed text-justify ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>
+              <p className={`text-base leading-relaxed text-left ${isDark ? 'theme-text-secondary' : 'text-slate-700'}`}>
                 Adamass Intelligence represents our institutional approach to due diligence, distilled into an accessible platform. We've systematized our analytical framework—refined through years of client engagements—to deliver comprehensive desktop reviews in under five minutes, ensuring consistency, eliminating subjective bias, and maintaining the same standard of excellence we apply to our direct advisory work.
               </p>
             </div>
@@ -316,7 +316,7 @@ function AccordionColumn({ isDark, columnIndex }: { isDark: boolean; columnIndex
               onClick={() => setOpenIdx(isOpen ? null : idx)}
               className={`w-full flex items-center justify-between px-2 py-4 focus:outline-none`}
             >
-              <span className={`text-lg ${isDark ? 'theme-text' : 'text-slate-800'} font-medium`}>
+              <span className={`text-md ${isDark ? 'theme-text' : 'text-slate-800'} font-medium`}>
                 {it.title}
               </span>
               <svg

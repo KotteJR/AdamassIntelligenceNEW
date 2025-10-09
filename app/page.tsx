@@ -40,6 +40,7 @@ function HomeContent() {
   const { isDark } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isInfoMenuOpen, setIsInfoMenuOpen] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const infoMenuRef = useRef<HTMLDivElement | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -152,7 +153,7 @@ function HomeContent() {
           <div className="flex items-center space-x-3">
             {user ? (
               <>
-                <div className="relative" ref={infoMenuRef}>
+                <div className="relative hidden sm:block" ref={infoMenuRef}>
                   <button 
                     onClick={() => setIsInfoMenuOpen(v => !v)}
                     className={`py-2 text-sm font-medium transition-colors ${isDark ? 'theme-text-secondary hover:text-slate-300' : 'text-slate-600 hover:text-slate-900'}`}
@@ -168,7 +169,7 @@ function HomeContent() {
                 </div>
                 <button 
                   onClick={() => user ? setIsModalOpen(true) : setIsAuthModalOpen(true)} 
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  className={`hidden sm:inline-flex rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                     isDark 
                       ? 'btn-primary' 
                       : 'bg-slate-900 text-white hover:bg-black'
@@ -177,7 +178,7 @@ function HomeContent() {
                   + Create new
                 </button>
                 <ThemeToggle />
-                <div className="relative" ref={menuRef}>
+                <div className="relative hidden sm:block" ref={menuRef}>
                   <button onClick={() => setIsMenuOpen(v => !v)} className={`h-9 w-9 rounded-full overflow-hidden ring-1 align-middle ${isDark ? 'ring-[color:var(--border-primary)]' : 'ring-slate-200'}`}>
                     <img src={user.avatarUrl || '/avatars/a1.png'} alt="Profile" className="h-full w-full object-cover" />
                   </button>
@@ -188,10 +189,20 @@ function HomeContent() {
                     </div>
                   )}
                 </div>
+                {/* Mobile hamburger */}
+                <button
+                  className={`sm:hidden inline-flex h-9 w-9 items-center justify-center rounded-md ${isDark ? 'theme-muted' : 'bg-slate-100'}`}
+                  onClick={() => setIsMobileNavOpen(v => !v)}
+                  aria-label="Open menu"
+                >
+                  <svg viewBox="0 0 24 24" className={`${isDark ? 'theme-text' : 'text-slate-800'} h-5 w-5`} fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
               </>
             ) : (
               <>
-                <div className="relative" ref={infoMenuRef}>
+                <div className="relative hidden sm:block" ref={infoMenuRef}>
                   <button 
                     onClick={() => setIsInfoMenuOpen(v => !v)}
                     className={`py-2 text-sm font-medium transition-colors ${isDark ? 'theme-text-secondary hover:text-slate-300' : 'text-slate-600 hover:text-slate-900'}`}
@@ -207,7 +218,7 @@ function HomeContent() {
                 </div>
                 <button 
                   onClick={() => user ? setIsModalOpen(true) : setIsAuthModalOpen(true)} 
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  className={`hidden sm:inline-flex rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                     isDark 
                       ? 'btn-primary' 
                       : 'bg-slate-900 text-white hover:bg-black'
@@ -218,7 +229,7 @@ function HomeContent() {
                 <ThemeToggle />
                 <button 
                   onClick={() => setIsAuthModalOpen(true)}
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  className={`hidden sm:inline-flex rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                     isDark 
                       ? 'theme-muted theme-text hover:opacity-80' 
                       : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -226,10 +237,45 @@ function HomeContent() {
                 >
                   Sign in
                 </button>
+                {/* Mobile hamburger */}
+                <button
+                  className={`sm:hidden inline-flex h-9 w-9 items-center justify-center rounded-md ${isDark ? 'theme-muted' : 'bg-slate-100'}`}
+                  onClick={() => setIsMobileNavOpen(v => !v)}
+                  aria-label="Open menu"
+                >
+                  <svg viewBox="0 0 24 24" className={`${isDark ? 'theme-text' : 'text-slate-800'} h-5 w-5`} fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
               </>
             )}
           </div>
         </div>
+
+        {/* Mobile dropdown menu */}
+        {isMobileNavOpen && (
+          <div className="sm:hidden">
+            <div className={`mx-auto max-w-7xl px-4 pb-3`}> 
+              <div className={`mt-2 rounded-xl border p-2 ${isDark ? 'theme-card theme-border' : 'bg-white border-slate-200'}`}>
+                {user ? (
+                  <>
+                    <button onClick={() => { setIsMobileNavOpen(false); router.push('/about'); }} className={`w-full text-left px-2 py-2 rounded-lg ${isDark ? 'hover:theme-muted theme-text' : 'hover:bg-slate-50'}`}>About</button>
+                    <button onClick={() => { setIsMobileNavOpen(false); router.push('/pricing'); }} className={`w-full text-left px-2 py-2 rounded-lg ${isDark ? 'hover:theme-muted theme-text' : 'hover:bg-slate-50'}`}>Pricing</button>
+                    <button onClick={() => { setIsMobileNavOpen(false); setIsModalOpen(true); }} className={`w-full text-left px-2 py-2 rounded-lg ${isDark ? 'btn-primary text-left' : 'bg-slate-900 text-white hover:bg-black'}`}>+ Create new</button>
+                    <button onClick={() => { setIsMobileNavOpen(false); router.push('/subscription'); }} className={`w-full text-left px-2 py-2 rounded-lg ${isDark ? 'hover:theme-muted theme-text' : 'hover:bg-slate-50'}`}>Subscription</button>
+                    <button onClick={() => { setIsMobileNavOpen(false); signOut(); }} className={`w-full text-left px-2 py-2 rounded-lg ${isDark ? 'hover:theme-muted theme-text' : 'hover:bg-slate-50'}`}>Sign out</button>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={() => { setIsMobileNavOpen(false); router.push('/about'); }} className={`w-full text-left px-2 py-2 rounded-lg ${isDark ? 'hover:theme-muted theme-text' : 'hover:bg-slate-50'}`}>About</button>
+                    <button onClick={() => { setIsMobileNavOpen(false); router.push('/pricing'); }} className={`w-full text-left px-2 py-2 rounded-lg ${isDark ? 'hover:theme-muted theme-text' : 'hover:bg-slate-50'}`}>Pricing</button>
+                    <button onClick={() => { setIsMobileNavOpen(false); setIsAuthModalOpen(true); }} className={`w-full text-left px-2 py-2 rounded-lg ${isDark ? 'btn-primary text-left' : 'bg-slate-900 text-white hover:bg-black'}`}>Sign in</button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="mx-auto w-full max-w-7xl px-4 py-8">
