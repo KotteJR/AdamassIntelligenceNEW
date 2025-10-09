@@ -508,7 +508,7 @@ export default function AddSourcesModal({
         </div>
 
         {/* Body */}
-        <div className="grid grid-cols-1 md:grid-cols-2 flex-1 min-h-0 overflow-y-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 flex-1 min-h-0 overflow-hidden">
           {/* Left: form */}
           <form className="space-y-5 px-6 py-6 pb-8">
             {/* Section 1: Company & Identity */}
