@@ -39,7 +39,9 @@ function HomeContent() {
   const { user, isLoading: userLoading, signOut } = useUser();
   const { isDark } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isInfoMenuOpen, setIsInfoMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const infoMenuRef = useRef<HTMLDivElement | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [allReports, setAllReports] = useState<StoredReportIndexItem[]>([]);
@@ -122,8 +124,12 @@ function HomeContent() {
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (!menuRef.current) return;
-      if (!menuRef.current.contains(e.target as Node)) setIsMenuOpen(false);
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsMenuOpen(false);
+      }
+      if (infoMenuRef.current && !infoMenuRef.current.contains(e.target as Node)) {
+        setIsInfoMenuOpen(false);
+      }
     };
     document.addEventListener('click', handler);
     return () => document.removeEventListener('click', handler);
@@ -146,8 +152,22 @@ function HomeContent() {
           <div className="flex items-center space-x-3">
             {user ? (
               <>
-                 <button 
-                   onClick={() => user ? setIsModalOpen(true) : setIsAuthModalOpen(true)} 
+                <div className="relative" ref={infoMenuRef}>
+                  <button 
+                    onClick={() => setIsInfoMenuOpen(v => !v)}
+                    className={`py-2 text-sm font-medium transition-colors ${isDark ? 'theme-text-secondary hover:text-slate-300' : 'text-slate-600 hover:text-slate-900'}`}
+                  >
+                    Learn More ▾
+                  </button>
+                  {isInfoMenuOpen && (
+                    <div className={`absolute left-0 mt-6 w-48 rounded-xl border p-2 text-sm shadow-sm ${isDark ? 'theme-card theme-border' : 'border-slate-200 bg-white'}`}>
+                      <button onClick={() => { setIsInfoMenuOpen(false); router.push('/about'); }} className={`w-full text-left px-2 py-1 rounded-lg ${isDark ? 'hover:theme-muted theme-text-secondary' : 'hover:bg-slate-50'}`}>About</button>
+                      <button onClick={() => { setIsInfoMenuOpen(false); router.push('/pricing'); }} className={`w-full text-left px-2 py-1 rounded-lg ${isDark ? 'hover:theme-muted theme-text-secondary' : 'hover:bg-slate-50'}`}>Pricing</button>
+                    </div>
+                  )}
+                </div>
+                <button 
+                  onClick={() => user ? setIsModalOpen(true) : setIsAuthModalOpen(true)} 
                   className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                     isDark 
                       ? 'btn-primary' 
@@ -162,8 +182,9 @@ function HomeContent() {
                     <img src={user.avatarUrl || '/avatars/a1.png'} alt="Profile" className="h-full w-full object-cover" />
                   </button>
                   {isMenuOpen && (
-                    <div className={`absolute right-0 mt-2 w-40 rounded-xl border p-2 text-sm shadow-sm ${isDark ? 'theme-card theme-border' : 'border-slate-200 bg-white'}`}>
+                    <div className={`absolute right-0 mt-6 w-40 rounded-xl border p-2 text-sm shadow-sm ${isDark ? 'theme-card theme-border' : 'border-slate-200 bg-white'}`}>
                       <div className={`px-2 py-1 font-medium truncate ${isDark ? 'theme-text' : 'text-slate-900'}`}>{user.name || user.email}</div>
+                      <button onClick={() => { setIsMenuOpen(false); router.push('/subscription'); }} className={`w-full text-left px-2 py-1 rounded-lg ${isDark ? 'hover:theme-muted theme-text-secondary' : 'hover:bg-slate-50'}`}>Subscription</button>
                       <button onClick={() => { setIsMenuOpen(false); signOut(); }} className={`w-full text-left px-2 py-1 rounded-lg ${isDark ? 'hover:theme-muted theme-text-secondary' : 'hover:bg-slate-50'}`}>Sign out</button>
                     </div>
                   )}
@@ -171,12 +192,20 @@ function HomeContent() {
               </>
             ) : (
               <>
-                <button 
-                  onClick={() => setIsAuthModalOpen(true)}
-                  className={`text-sm font-medium transition-colors ${isDark ? 'theme-text-secondary hover:accent' : 'text-slate-600 hover:text-slate-900'}`}
-                >
-                  Sign in
-                </button>
+                <div className="relative" ref={infoMenuRef}>
+                  <button 
+                    onClick={() => setIsInfoMenuOpen(v => !v)}
+                    className={`py-2 text-sm font-medium transition-colors ${isDark ? 'theme-text-secondary hover:text-slate-300' : 'text-slate-600 hover:text-slate-900'}`}
+                  >
+                    Learn More ▾
+                  </button>
+                  {isInfoMenuOpen && (
+                    <div className={`absolute left-0 mt-6 w-48 rounded-xl border p-2 text-sm shadow-sm ${isDark ? 'theme-card theme-border' : 'border-slate-200 bg-white'}`}>
+                      <button onClick={() => { setIsInfoMenuOpen(false); router.push('/about'); }} className={`w-full text-left px-2 py-1 rounded-lg ${isDark ? 'hover:theme-muted theme-text-secondary' : 'hover:bg-slate-50'}`}>About</button>
+                      <button onClick={() => { setIsInfoMenuOpen(false); router.push('/pricing'); }} className={`w-full text-left px-2 py-1 rounded-lg ${isDark ? 'hover:theme-muted theme-text-secondary' : 'hover:bg-slate-50'}`}>Pricing</button>
+                    </div>
+                  )}
+                </div>
                 <button 
                   onClick={() => user ? setIsModalOpen(true) : setIsAuthModalOpen(true)} 
                   className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
@@ -188,6 +217,16 @@ function HomeContent() {
                   + Create new
                 </button>
                 <ThemeToggle />
+                <button 
+                  onClick={() => setIsAuthModalOpen(true)}
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                    isDark 
+                      ? 'theme-muted theme-text hover:opacity-80' 
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  Sign in
+                </button>
               </>
             )}
           </div>
