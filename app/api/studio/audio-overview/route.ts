@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
+import { supabase } from '../../../../lib/supabaseClient';
+import { gateFeature } from '../../../../lib/subscriptionCheck';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -18,6 +20,21 @@ const OPENAI_TTS_VOICE = process.env.OPENAI_TTS_VOICE || 'alloy';
 
 export async function POST(request: NextRequest) {
   try {
+    // Auth & feature gate
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const token = authHeader.substring(7);
+    const { data: authData } = await supabase.auth.getUser(token);
+    const user = authData?.user;
+    if (!user) return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+
+    const gate = await gateFeature(user.id, 'audio');
+    if (!gate.allowed) {
+      return NextResponse.json({ error: gate.reason || 'Not allowed', redirect: gate.redirect, tier: gate.tier }, { status: 402 });
+    }
+
     const { reportData, userId, jobId } = await request.json();
 
     if (!reportData) {

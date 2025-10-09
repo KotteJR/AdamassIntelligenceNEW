@@ -4,8 +4,8 @@ import { ThemeProvider } from "./components/ThemeToggle";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Adamass Console",
-  description: "Notebook-style console for company analysis",
+  title: "Adamass Intelligence",
+  description: "AI console for company analysis",
 };
 
 export default function RootLayout({

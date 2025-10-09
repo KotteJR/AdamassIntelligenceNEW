@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
+import { supabase } from '../../../../lib/supabaseClient';
+import { gateFeature } from '../../../../lib/subscriptionCheck';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -14,6 +16,22 @@ const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
 export async function POST(request: NextRequest) {
   try {
+    // Auth
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const token = authHeader.substring(7);
+    const { data: authData } = await supabase.auth.getUser(token);
+    const user = authData?.user;
+    if (!user) return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+
+    // Feature gate: swot
+    const gate = await gateFeature(user.id, 'swot');
+    if (!gate.allowed) {
+      return NextResponse.json({ error: gate.reason || 'Not allowed', redirect: gate.redirect, tier: gate.tier }, { status: 402 });
+    }
+
     const { reportData, userId, jobId } = await request.json();
 
     if (!reportData) {
@@ -293,7 +311,7 @@ IMPORTANT: Return ONLY valid, complete JSON. No markdown, no explanations, just 
     try {
       const url = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
       const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-      if (url && anon && userId && jobId) {
+      if (userId && jobId && url && anon) {
         const supabase = createClient(url, anon);
         await supabase.from('user_artifacts').insert([
           {

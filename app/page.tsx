@@ -183,7 +183,6 @@ function HomeContent() {
                   </button>
                   {isMenuOpen && (
                     <div className={`absolute right-0 mt-6 w-40 rounded-xl border p-2 text-sm shadow-sm ${isDark ? 'theme-card theme-border' : 'border-slate-200 bg-white'}`}>
-                      <div className={`px-2 py-1 font-medium truncate ${isDark ? 'theme-text' : 'text-slate-900'}`}>{user.name || user.email}</div>
                       <button onClick={() => { setIsMenuOpen(false); router.push('/subscription'); }} className={`w-full text-left px-2 py-1 rounded-lg ${isDark ? 'hover:theme-muted theme-text-secondary' : 'hover:bg-slate-50'}`}>Subscription</button>
                       <button onClick={() => { setIsMenuOpen(false); signOut(); }} className={`w-full text-left px-2 py-1 rounded-lg ${isDark ? 'hover:theme-muted theme-text-secondary' : 'hover:bg-slate-50'}`}>Sign out</button>
                     </div>

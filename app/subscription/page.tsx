@@ -110,7 +110,7 @@ export default function SubscriptionPage() {
             Manage your subscription
           </h2>
           <h1 className={`text-2xl font-bold mb-2 ${isDark ? 'theme-text' : 'text-slate-900'}`}>
-            Hello {user?.name || user?.email || 'there'}
+            Hello there, {user?.name || user?.email || 'there'}
           </h1>
           <p className={`text-sm ${isDark ? 'theme-text-secondary' : 'text-slate-600'}`}>
             View your current plan, usage, and billing information

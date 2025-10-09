@@ -281,9 +281,14 @@ export default function AddSourcesModal({
       }
 
       addLog("Triggering workflow...");
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token || '';
       const initResponse = await fetch("/api/initiate-analysis", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+        },
         body: (() => {
           const base: any = {
             companyAlias,
@@ -303,6 +308,24 @@ export default function AddSourcesModal({
       });
       const initJson = await initResponse.json();
       if (!initResponse.ok) {
+        // Auth required
+        if (initResponse.status === 401) {
+          setIsProcessing(false);
+          setIsAborted(true);
+          addLog("Authentication required. Please sign in.");
+          onClose();
+          // open sign-in via parent (kept simple here)
+          throw new Error("Authentication required.");
+        }
+        // Limit reached => route to subscription
+        if (initResponse.status === 402 && initJson?.redirect) {
+          addLog(initJson?.reason || "Usage limit reached");
+          setIsProcessing(false);
+          setIsAborted(true);
+          onClose();
+          if (typeof window !== 'undefined') window.location.href = initJson.redirect;
+          return;
+        }
         const errorMsg = initJson.error || "Failed to initiate analysis";
         const details = initJson.details ? ` Details: ${initJson.details}` : "";
         const troubleshooting = initJson.troubleshooting ? ` Troubleshooting: ${initJson.troubleshooting}` : "";

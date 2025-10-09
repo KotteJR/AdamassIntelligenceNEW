@@ -137,7 +137,7 @@ export default function SubscriptionManager() {
         {/* Current Plan */}
         <div>
           <h2 className={`text-2xl font-bold ${isDark ? 'theme-text' : 'text-slate-900'}`}>
-            {status.tier === 'free' ? '🆓 Free Plan' : status.tier === 'pro' ? 'Adamass Pro' : 'Adamass Enterprise'}
+            {status.tier === 'free' ? 'Free Plan' : status.tier === 'pro' ? 'Adamass Pro' : 'Adamass Enterprise'}
           </h2>
           <p className={`text-sm mt-1 ${isDark ? 'theme-text-muted' : 'text-slate-500'}`}>
             {status.tier === 'free' ? 'Basic features' : status.tier === 'pro' ? 'All Pro features included' : 'Unlimited access'}

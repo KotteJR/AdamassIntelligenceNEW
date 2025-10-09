@@ -224,7 +224,7 @@ function StudioCard({ title, subtitle, imageSrc, onClick, disabled, isGenerated 
       </div>
       <div className={`pointer-events-none absolute right-3 top-3 inline-flex items-center rounded-full px-2 py-1 text-[10px] font-medium shadow-sm ring-1 backdrop-blur ${
         isGenerated 
-          ? 'bg-green-100 text-green-700 ring-green-200' 
+          ? (isDark ? 'bg-green-900/50 text-green-200 ring-green-400' : 'bg-green-50 text-green-800 ring-green-400')
           : isDark 
             ? 'theme-muted theme-text ring-[color:var(--border-primary)] group-hover:theme-card' 
             : 'bg-white/80 text-slate-700 ring-slate-200 group-hover:bg-white'
@@ -987,9 +987,9 @@ function ReportConsoleContent() {
                 {/* Category: STRATEGIC */}
                 <div className="mb-6">
                   <div className="flex items-center mb-3">
-                    <div className={`flex-1 h-px ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`}></div>
+                      <div className={`flex-1 h-px ${isDark ? 'bg-[color:var(--border-primary)]' : 'bg-slate-200'}`}></div>
                     <span className={`px-3 text-xs font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Strategic</span>
-                    <div className={`flex-1 h-px ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`}></div>
+                      <div className={`flex-1 h-px ${isDark ? 'bg-[color:var(--border-primary)]' : 'bg-slate-200'}`}></div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <StudioCard
@@ -1018,9 +1018,9 @@ function ReportConsoleContent() {
                 {/* Category: AUDIO */}
                 <div>
                   <div className="flex items-center mb-3">
-                    <div className={`flex-1 h-px ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`}></div>
+                    <div className={`flex-1 h-px ${isDark ? 'bg-[color:var(--border-primary)]' : 'bg-slate-200'}`}></div>
                     <span className={`px-3 text-xs font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Audio</span>
-                    <div className={`flex-1 h-px ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`}></div>
+                    <div className={`flex-1 h-px ${isDark ? 'bg-[color:var(--border-primary)]' : 'bg-slate-200'}`}></div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <StudioCard
@@ -1136,9 +1136,9 @@ function ReportConsoleContent() {
                   {/* Category: STRATEGIC */}
                   <div className="mb-6">
                     <div className="flex items-center mb-3">
-                      <div className={`flex-1 h-px ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`}></div>
+                    <div className={`flex-1 h-px ${isDark ? 'bg-[color:var(--border-primary)]' : 'bg-slate-200'}`}></div>
                       <span className={`px-3 text-xs font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Strategic</span>
-                      <div className={`flex-1 h-px ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`}></div>
+                    <div className={`flex-1 h-px ${isDark ? 'bg-[color:var(--border-primary)]' : 'bg-slate-200'}`}></div>
                     </div>
                     <div className="grid grid-cols-2 gap-4 auto-rows-[1fr]">
                       <StudioCard
@@ -1167,9 +1167,9 @@ function ReportConsoleContent() {
                   {/* Category: AUDIO */}
                   <div className="mb-6">
                     <div className="flex items-center mb-3">
-                      <div className={`flex-1 h-px ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`}></div>
+                      <div className={`flex-1 h-px ${isDark ? 'bg-[color:var(--border-primary)]' : 'bg-slate-200'}`}></div>
                       <span className={`px-3 text-xs font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Audio</span>
-                      <div className={`flex-1 h-px ${isDark ? 'bg-slate-600' : 'bg-slate-300'}`}></div>
+                      <div className={`flex-1 h-px ${isDark ? 'bg-[color:var(--border-primary)]' : 'bg-slate-200'}`}></div>
                     </div>
                     <div className="grid grid-cols-2 gap-4 auto-rows-[1fr]">
                       <StudioCard

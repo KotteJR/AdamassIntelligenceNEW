@@ -8,6 +8,19 @@ export interface SubscriptionCheck {
   analysesRemaining: number;
 }
 
+export type FeatureKey = 'swot' | 'audio' | 'mindmap' | 'podcast' | 'reports';
+
+export function isFeatureAllowedForTier(tier: string, feature: FeatureKey): boolean {
+  // Adjust matrix as needed
+  const matrix: Record<string, FeatureKey[]> = {
+    free: ['reports'],
+    pro: ['reports', 'swot', 'audio', 'mindmap'],
+    enterprise: ['reports', 'swot', 'audio', 'mindmap', 'podcast']
+  };
+  const allowed = matrix[tier] || ['reports'];
+  return allowed.includes(feature);
+}
+
 /**
  * Check if a user can create a new analysis based on their subscription
  */
@@ -187,5 +200,26 @@ export async function grantAnalysisCredits(userId: string, count: number = 1): P
   } catch (error: any) {
     console.error('Error in grantAnalysisCredits:', error);
     return false;
+  }
+}
+
+/**
+ * Gate a feature by tier; returns {allowed, tier}
+ */
+export async function gateFeature(userId: string, feature: FeatureKey): Promise<{ allowed: boolean; tier: string; reason?: string; redirect?: string; }>{
+  try {
+    const { data: profile } = await supabaseAdmin
+      .from('user_profiles')
+      .select('subscription_tier, subscription_status')
+      .eq('id', userId)
+      .single();
+    const tier = profile?.subscription_tier || 'free';
+    const status = profile?.subscription_status || 'none';
+    const allowed = isFeatureAllowedForTier(tier, feature) && (tier === 'free' ? true : ['active', 'trialing'].includes(status));
+    return allowed
+      ? { allowed: true, tier }
+      : { allowed: false, tier, reason: 'Your plan does not include this feature.', redirect: '/subscription?feature=' + feature };
+  } catch (e) {
+    return { allowed: false, tier: 'unknown', reason: 'Unable to verify subscription', redirect: '/subscription' };
   }
 }

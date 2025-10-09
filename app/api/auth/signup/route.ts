@@ -46,12 +46,20 @@ export async function POST(req: NextRequest) {
       if (confirmErr) console.warn('Force confirm error:', confirmErr);
     }
 
-    // Create profile row
-    // Create profile row if table exists; ignore errors to avoid blocking signup
+    // Create profile row with FREE defaults
     try {
       const { error: profileError } = await supabaseAdmin
         .from('user_profiles')
-        .insert([{ id: userId, email: userEmail, name, avatar_url }]);
+        .insert([{ 
+          id: userId, 
+          email: userEmail, 
+          name, 
+          avatar_url,
+          subscription_tier: 'free',
+          subscription_status: 'none',
+          analyses_limit: 1,
+          analyses_remaining: 1
+        }]);
       if (profileError) console.warn('Profile insert warning:', profileError.message);
     } catch {}
 
