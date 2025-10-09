@@ -43,6 +43,7 @@ export default function AddSourcesModal({
   const [files, setFiles] = useState<File[]>([]);
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
@@ -50,6 +51,7 @@ export default function AddSourcesModal({
   const logRef = useRef<HTMLDivElement>(null);
   const [isAborted, setIsAborted] = useState(false);
   const abortedRef = useRef(false);
+  const startingRef = useRef(false);
 
   // Suggestion options for datalists
   const [companyAliasOptions, setCompanyAliasOptions] = useState<string[]>([]);
@@ -208,8 +210,13 @@ export default function AddSourcesModal({
   };
 
   const startAnalysis = async () => {
+    if (startingRef.current || isProcessing) return; // hard guard against rapid double-clicks
+    startingRef.current = true;
+    setIsStarting(true);
     if (!companyAlias || !websiteUrl) {
       addLog("Company alias and website URL are required.");
+      startingRef.current = false;
+      setIsStarting(false);
       return;
     }
     // Duplicate check (exact + OpenAI fuzzy). Block creation if match found.
@@ -479,10 +486,12 @@ export default function AddSourcesModal({
       addLog(`Error: ${errorMessage}`);
     } finally {
       setIsProcessing(false);
+      startingRef.current = false;
+      setIsStarting(false);
     }
   };
 
-  const canStart = companyAlias.trim() !== "" && websiteUrl.trim() !== "" && !isProcessing;
+  const canStart = companyAlias.trim() !== "" && websiteUrl.trim() !== "" && !isProcessing && !isStarting;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur">
@@ -766,7 +775,7 @@ export default function AddSourcesModal({
                     disabled={!canStart}
                     className={`rounded-lg px-4 py-2 text-sm font-medium ${canStart ? (isDark ? 'btn-primary' : 'bg-slate-900 text-white hover:bg-black') : (isDark ? 'theme-muted theme-text-muted' : 'bg-slate-200 text-slate-500')}`}
                   >
-                    Create analysis
+                    {isStarting || isProcessing ? 'Starting…' : 'Create analysis'}
                   </button>
                 </>
               ) : (
