@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Get user profile with subscription info
-    const { data: profile, error: profileError } = await supabaseAdmin
+    let { data: profile, error: profileError, status } = await supabaseAdmin
       .from('user_profiles')
       .select(`
         subscription_tier,
@@ -37,6 +37,38 @@ export async function GET(req: NextRequest) {
       `)
       .eq('id', user.id)
       .single();
+
+    // If profile doesn't exist (406 from PostgREST when using single()), create a default one
+    if ((!profile || profileError) && (status === 406 || status === 404 || !status)) {
+      const { error: insertErr } = await supabaseAdmin
+        .from('user_profiles')
+        .insert({
+          id: user.id,
+          email: (user as any).email || null,
+          subscription_tier: 'free',
+          subscription_status: 'none',
+          analyses_limit: 1,
+          analyses_remaining: 1,
+        });
+      if (insertErr) {
+        console.error('Error creating default profile:', insertErr);
+      } else {
+        const res = await supabaseAdmin
+          .from('user_profiles')
+          .select(`
+            subscription_tier,
+            subscription_status,
+            analyses_remaining,
+            analyses_limit,
+            subscription_period_end,
+            stripe_customer_id
+          `)
+          .eq('id', user.id)
+          .single();
+        profile = res.data as any;
+        profileError = res.error as any;
+      }
+    }
 
     if (profileError) {
       console.error('Error fetching profile:', profileError);
@@ -59,9 +91,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       tier: profile?.subscription_tier || 'free',
       status: profile?.subscription_status || 'none',
-      analysesRemaining: profile?.analyses_remaining || 0,
-      analysesLimit: profile?.analyses_limit || 1,
-      periodEnd: profile?.subscription_period_end,
+      analysesRemaining: profile?.analyses_remaining ?? 1,
+      analysesLimit: profile?.analyses_limit ?? 1,
+      periodEnd: profile?.subscription_period_end || null,
       hasStripeCustomer: !!profile?.stripe_customer_id,
       subscription: subscription || null,
     });
