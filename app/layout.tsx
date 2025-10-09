@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/react";
 import { UserProvider } from "./contexts/UserContext";
 import { ThemeProvider } from "./components/ThemeToggle";
 import "./globals.css";
@@ -19,6 +20,7 @@ export default function RootLayout({
         <ThemeProvider>
           <UserProvider>
             {children}
+            <Analytics />
           </UserProvider>
         </ThemeProvider>
       </body>
